@@ -17,16 +17,12 @@ public class ResponseHelper {
     public static final String FORBIDDEN = "The operation generated a forbidden error by other reason";
 
     public static Response ok(Map<String, Object> entity) {
-        return Response
-                .ok(Map.of("status", "success",
-                        "data", entity))
-                .build();
+        return Response.ok(Map.of("status", "success", "data", entity)).build();
     }
 
     public static Response error(String message) {
         String messageCode = getMessageCode(message);
-        return Response
-                .status(getHttpStatus(messageCode))
+        return Response.status(getHttpStatus(messageCode))
                 .entity(Map.of("status", messageCode, "data", message))
                 .build();
     }
