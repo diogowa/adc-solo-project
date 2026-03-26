@@ -25,7 +25,6 @@ public class UserEntity {
     public Entity toEntity(Datastore datastore) {
         Key key = datastore.newKeyFactory().setKind("User").newKey(username);
         return Entity.newBuilder(key)
-                .set("username", username)
                 .set("password", password)
                 .set("phone", phone)
                 .set("address", address)
@@ -33,7 +32,7 @@ public class UserEntity {
                 .build();
     }
 
-    public static UserEntity getUserEntity(Entity entity) {
+    public static UserEntity fromEntity(Entity entity) {
         return new UserEntity(
                 entity.getString("username"),
                 entity.getString("password"),

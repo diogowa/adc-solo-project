@@ -39,7 +39,7 @@ public class UserDAO {
         if (entity == null) {
             return null;
         }
-        return UserEntity.getUserEntity(entity);
+        return UserEntity.fromEntity(entity);
     }
 
     public List<UserEntity> getUsers() {
@@ -47,7 +47,7 @@ public class UserDAO {
         QueryResults<Entity> users = datastore.run(query);
 
         List<UserEntity> userList = new ArrayList<>();
-        users.forEachRemaining(entity -> userList.add(UserEntity.getUserEntity(entity)));
+        users.forEachRemaining(entity -> userList.add(UserEntity.fromEntity(entity)));
 
         return userList;
     }
