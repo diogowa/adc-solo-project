@@ -1,5 +1,6 @@
 package org.example.resource;
 
+import com.google.cloud.datastore.DatastoreException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -42,13 +43,21 @@ public class UserResource {
                 req.role
         );
 
-        boolean created = userDAO.createUser(user);
-        if (!created) {
-            LOG.severe("User already exists: " + req.username);
-            return ResponseHelper.error(ResponseHelper.USER_ALREADY_EXISTS);
-        } else {
-            LOG.info("Account was created: " + req.username);
-            return ResponseHelper.ok(Map.of("username", req.username, "role", req.role));
+        try {
+            boolean created = userDAO.createUser(user);
+            if (created) {
+                LOG.info("Account was created: " + req.username);
+                return ResponseHelper.ok(Map.of("username", req.username, "role", req.role));
+            } else {
+                LOG.severe("User already exists: " + req.username);
+                return ResponseHelper.error(ResponseHelper.USER_ALREADY_EXISTS);
+            }
+        } catch (DatastoreException e) {
+            LOG.severe("Datastore could not create account: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            LOG.severe("Unexpected error creating account: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
 }
