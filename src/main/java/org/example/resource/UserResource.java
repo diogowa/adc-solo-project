@@ -27,28 +27,28 @@ public class UserResource {
 
     @POST
     @Path("/createaccount")
-    public Response createAccount(RegisterRequest data) {
-        LOG.fine("createAccount: " + data.username);
+    public Response createAccount(RegisterRequest req) {
+        LOG.fine("createAccount: " + req.username);
 
-        if (!data.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
         }
 
         UserEntity user = new UserEntity(
-                data.username,
-                DigestUtils.sha512Hex(data.password),
-                data.phone,
-                data.address,
-                data.role
+                req.username,
+                DigestUtils.sha512Hex(req.password),
+                req.phone,
+                req.address,
+                req.role
         );
 
         boolean created = userDAO.createUser(user);
         if (!created) {
-            LOG.severe("User already exists: " + data.username);
+            LOG.severe("User already exists: " + req.username);
             return ResponseHelper.error(ResponseHelper.USER_ALREADY_EXISTS);
         } else {
-            LOG.info("Account was created: " + data.username);
-            return ResponseHelper.ok(Map.of("username", data.username, "role", data.role));
+            LOG.info("Account was created: " + req.username);
+            return ResponseHelper.ok(Map.of("username", req.username, "role", req.role));
         }
     }
 }
