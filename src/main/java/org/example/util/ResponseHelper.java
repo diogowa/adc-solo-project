@@ -14,6 +14,7 @@ public class ResponseHelper {
     public static final String UNAUTHORIZED = "The operation is not allowed for the user role";
     public static final String INVALID_INPUT = "The call is using input data not following the correct specification";
     public static final String FORBIDDEN = "The operation generated a forbidden error by other reason";
+    public static final String INTERNAL_SERVER_ERROR = "An error occurred while processing the request";
 
     public static Response ok(Map<String, Object> entity) {
         return Response.ok(Map.of("status", "success", "data", entity)).build();
@@ -36,7 +37,7 @@ public class ResponseHelper {
             case UNAUTHORIZED -> "9905";
             case INVALID_INPUT -> "9906";
             case FORBIDDEN -> "9907";
-            default -> "9907";
+            default -> "500";
         };
     }
 
