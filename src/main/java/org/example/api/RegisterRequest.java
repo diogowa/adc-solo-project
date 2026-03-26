@@ -1,38 +1,34 @@
-package org.example.util;
+package org.example.api;
 
 import java.util.logging.Logger;
 
-enum ROLE {
-    USER,
-    BOFFICER,
-    ADMIN
-}
-
-public class RegisterData {
-    private static final Logger LOG = Logger.getLogger(RegisterData.class.getName());
+public class RegisterRequest {
+    private static final Logger LOG = Logger.getLogger(RegisterRequest.class.getName());
 
     public String username;
     public String password;
     public String confirmation;
-    public String email;
     public String phone;
     public String address;
-    public String role; // USER | BOFFICER | ADMIN
+    public Role role; // USER | BOFFICER | ADMIN
 
-    public RegisterData() {}
+    public RegisterRequest() {}
 
-    public RegisterData(String username, String password, String confirmation, String email, String phone, String address, String role) {
+    public RegisterRequest(String username, String password, String confirmation, String phone, String address, Role role) {
         this.username = username;
         this.password = password;
         this.confirmation = confirmation;
-        this.email = email;
         this.phone = phone;
         this.address = address;
         this.role = role;
     }
 
     private boolean notEmptyOrBlank(String field) {
-        return field != null && !field.isBlank();
+        if (field == null || field.isEmpty()) {
+            LOG.warning("Invalid field: " + field);
+            return false;
+        }
+        return true;
     }
 
     private boolean isValidPhone(String phone) {
@@ -45,30 +41,23 @@ public class RegisterData {
         }
     }
 
-    private boolean isValidRole(String role) {
-        String[] roles = role.split("\\|");
-        try {
-            for (String r : roles) {
-                ROLE.valueOf(r.trim());
-            }
-            return true;
-        } catch (IllegalArgumentException e) {
-            LOG.warning("Invalid role: " + role);
+    private boolean isValidRole(Role role) {
+        if (role == null) {
+            LOG.warning("Invalid role");
             return false;
         }
+        return true;
     }
 
     public boolean isValid() {
         return notEmptyOrBlank(username)
                 && notEmptyOrBlank(password)
                 && notEmptyOrBlank(confirmation)
-                && notEmptyOrBlank(email)
                 && notEmptyOrBlank(phone)
                 && notEmptyOrBlank(address)
-                && notEmptyOrBlank(role)
                 && isValidPhone(phone)
                 && isValidRole(role)
-                && email.contains("@")
+                && username.contains("@")
                 && password.equals(confirmation);
     }
 }

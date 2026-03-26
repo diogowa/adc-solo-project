@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.Response.Status;
 import java.util.Map;
 
 public class ResponseHelper {
-
     public static final String INVALID_CREDENTIALS = "The username-password pair is not valid";
     public static final String USER_ALREADY_EXISTS = "Error in creating an account because the username already exists";
     public static final String USER_NOT_FOUND = "The username referred in the operation doesn’t exist in registered accounts";
