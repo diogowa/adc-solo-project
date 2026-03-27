@@ -15,7 +15,7 @@
 
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>pt.unl.fct.di.adc.firstwebapp.resources</param-value>
+            <param-value>org.example.resource</param-value>
         </init-param>
 
         <init-param>
@@ -30,8 +30,7 @@
 
         <init-param>
             <param-name>jersey.config.server.tracing.type</param-name>
-            <param-value>ALL
-            </param-value> <!-- This is a debug utility that should be disabled when code goes to production -->
+            <param-value>ALL</param-value> <!-- This is a debug utility that should be disabled when code goes to production -->
         </init-param>
 
         <load-on-startup>1</load-on-startup>

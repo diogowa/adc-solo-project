@@ -46,7 +46,7 @@ public class TokenEntity {
 
     public static TokenEntity fromEntity(Entity entity) {
         return new TokenEntity(
-                entity.getString("tokenId"),
+                entity.getKey().getName(),
                 entity.getString("username"),
                 Role.valueOf(entity.getString("role")),
                 entity.getLong("issuedAt"),

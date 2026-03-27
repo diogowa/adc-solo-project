@@ -34,7 +34,7 @@ public class UserEntity {
 
     public static UserEntity fromEntity(Entity entity) {
         return new UserEntity(
-                entity.getString("username"),
+                entity.getKey().getName(),
                 entity.getString("password"),
                 entity.getString("phone"),
                 entity.getString("address"),
