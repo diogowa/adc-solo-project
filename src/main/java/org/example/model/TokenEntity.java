@@ -35,7 +35,7 @@ public class TokenEntity {
     }
 
     public Entity toEntity(Datastore datastore) {
-        Key key = datastore.newKeyFactory().setKind("UserToken").newKey(tokenId);
+        Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
         return Entity.newBuilder(key)
                 .set("username", username)
                 .set("role", role.toString())

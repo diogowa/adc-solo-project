@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAO {
-    private static final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
+    private static final Datastore datastore = DatastoreOptions.newBuilder()
+            .setProjectId("individual-project-491518")
+            .build()
+            .getService();
 
     public boolean createUser(UserEntity user) {
         Transaction txn = datastore.newTransaction();
