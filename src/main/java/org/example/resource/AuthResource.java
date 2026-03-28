@@ -8,6 +8,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.example.api.InputWrapper;
 import org.example.api.LoginRequest;
 import org.example.model.TokenEntity;
 import org.example.model.UserEntity;
@@ -31,7 +32,9 @@ public class AuthResource {
 
     @POST
     @Path("/login")
-    public Response login(LoginRequest req) {
+    public Response login(InputWrapper<LoginRequest> body) {
+        LoginRequest req = body.input;
+
         LOG.fine("login: " + req.username);
 
         if (!req.isValid()) {
@@ -45,6 +48,7 @@ public class AuthResource {
             }
 
             if (!user.password.equals(DigestUtils.sha512Hex(req.password))) {
+                LOG.warning("Credentials do not match");
                 return ResponseHelper.error(ResponseHelper.INVALID_CREDENTIALS);
             }
 
@@ -58,7 +62,6 @@ public class AuthResource {
                     "expiresAt", token.expiresAt
             ));
         } catch (DatastoreException e) {
-            e.printStackTrace();
             LOG.severe("Datastore could not create token: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {

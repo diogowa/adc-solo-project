@@ -38,11 +38,7 @@ public class UserDAO {
 
     public UserEntity getUser(String username) {
         Key key = datastore.newKeyFactory().setKind("User").newKey(username);
-        Entity entity = datastore.get(key);
-        if (entity == null) {
-            return null;
-        }
-        return UserEntity.fromEntity(entity);
+        return UserEntity.fromEntity(datastore.get(key));
     }
 
     public List<UserEntity> getUsers() {
@@ -55,11 +51,8 @@ public class UserDAO {
         return userList;
     }
 
-
-
     public void deleteUser(String username) {
         Key key = datastore.newKeyFactory().setKind("User").newKey(username);
         datastore.delete(key);
     }
-
 }

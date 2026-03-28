@@ -54,7 +54,7 @@ public class TokenEntity {
         );
     }
 
-    public boolean isTokenValid() {
-        return System.currentTimeMillis() <= expiresAt;
+    public boolean isExpired() {
+        return System.currentTimeMillis() > expiresAt;
     }
 }
