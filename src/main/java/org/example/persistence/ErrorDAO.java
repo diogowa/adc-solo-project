@@ -1,0 +1,13 @@
+package org.example.persistence;
+
+public enum ErrorDAO {
+    INVALID_CREDENTIALS,
+    USER_ALREADY_EXISTS,
+    USER_NOT_FOUND,
+    INVALID_TOKEN,
+    TOKEN_EXPIRED,
+    UNAUTHORIZED,
+    INVALID_INPUT,
+    FORBIDDEN,
+    INTERNAL_SERVER_ERROR
+}
