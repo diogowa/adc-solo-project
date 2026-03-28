@@ -35,6 +35,16 @@ public class TokenDAO {
         return tokenList;
     }
 
+    public List<TokenEntity> getAllTokens() {
+        Query<Entity> query = Query.newEntityQueryBuilder().setKind("Token").build();
+        QueryResults<Entity> tokens = datastore.run(query);
+
+        List<TokenEntity> tokenList = new ArrayList<>();
+        tokens.forEachRemaining(entity -> tokenList.add(TokenEntity.fromEntity(entity)));
+
+        return tokenList;
+    }
+
     public void deleteToken(String tokenId) {
         Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
         datastore.delete(key);

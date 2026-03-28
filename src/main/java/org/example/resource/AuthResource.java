@@ -8,14 +8,18 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.example.api.EmptyRequest;
+import org.example.api.InputTokenWrapper;
 import org.example.api.InputWrapper;
 import org.example.api.LoginRequest;
+import org.example.model.Role;
 import org.example.model.TokenEntity;
 import org.example.model.UserEntity;
 import org.example.persistence.TokenDAO;
 import org.example.persistence.UserDAO;
 import org.example.util.ResponseHelper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -66,6 +70,41 @@ public class AuthResource {
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             LOG.severe("Unexpected error in login: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
+    @Path("/showauthsessions")
+    public Response showAuthSessions(InputTokenWrapper<EmptyRequest> body) {
+        LOG.fine("showAuthSessions");
+
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
+        }
+
+        try {
+            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
+            if (token == null) {
+                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
+            }
+
+            if (token.isExpired()) {
+                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
+            }
+
+            if (!token.role.equals(Role.ADMIN)) {
+                LOG.warning("Unauthorized role: " + token.role);
+                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            }
+
+            List<TokenEntity> tokens = tokenDAO.getAllTokens();
+            return ResponseHelper.ok(Map.of("sessions", tokens));
+        } catch (DatastoreException e) {
+            LOG.severe("Datastore could not show auth sessions: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            LOG.severe("Unexpected error showing auth sessions: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
