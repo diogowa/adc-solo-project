@@ -1,4 +1,4 @@
-package org.example.persistance;
+package org.example.persistence;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;

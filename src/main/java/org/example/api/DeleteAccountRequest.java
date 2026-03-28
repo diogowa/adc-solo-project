@@ -1,9 +1,9 @@
 package org.example.api;
 
-public class DeleteAccountRequest extends Request {
+public class DeleteAccountRequest {
     public String username;
 
     public boolean isValid() {
-        return notEmptyOrBlank(username);
+        return username != null && !username.isBlank();
     }
 }

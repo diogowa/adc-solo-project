@@ -1,6 +1,8 @@
 package org.example.api;
 
-public class CreateAccountRequest extends Request {
+import org.example.model.Role;
+
+public class CreateAccountRequest {
     public String username;
     public String password;
     public String confirmation;
@@ -17,10 +19,10 @@ public class CreateAccountRequest extends Request {
     }
 
     public boolean isValid() {
-        return notEmptyOrBlank(username)
-                && notEmptyOrBlank(password)
-                && notEmptyOrBlank(confirmation)
-                && notEmptyOrBlank(address)
+        return username != null && !username.isBlank()
+                && password != null && !password.isBlank()
+                && confirmation != null && !confirmation.isBlank()
+                && address != null && !address.isBlank()
                 && isValidPhone(phone)
                 && isValidRole(role)
                 && username.contains("@")

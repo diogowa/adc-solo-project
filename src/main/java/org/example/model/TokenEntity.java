@@ -3,7 +3,6 @@ package org.example.model;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
-import org.example.api.Role;
 
 import java.util.UUID;
 

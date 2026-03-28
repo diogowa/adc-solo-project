@@ -1,4 +1,4 @@
-package org.example.api;
+package org.example.model;
 
 public class Token {
     public String tokenId;

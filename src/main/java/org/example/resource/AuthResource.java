@@ -12,8 +12,8 @@ import org.example.api.InputWrapper;
 import org.example.api.LoginRequest;
 import org.example.model.TokenEntity;
 import org.example.model.UserEntity;
-import org.example.persistance.TokenDAO;
-import org.example.persistance.UserDAO;
+import org.example.persistence.TokenDAO;
+import org.example.persistence.UserDAO;
 import org.example.util.ResponseHelper;
 
 import java.util.Map;

@@ -1,4 +1,4 @@
-package org.example.persistance;
+package org.example.persistence;
 
 import com.google.cloud.datastore.*;
 import org.example.model.UserEntity;
