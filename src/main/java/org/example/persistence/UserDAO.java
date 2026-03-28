@@ -1,6 +1,7 @@
 package org.example.persistence;
 
 import com.google.cloud.datastore.*;
+import org.apache.http.util.EntityUtils;
 import org.example.model.TokenEntity;
 import org.example.model.UserEntity;
 
@@ -22,7 +23,6 @@ public class UserDAO {
 
             Entity exists = txn.get(key);
             if (exists != null) {
-                txn.rollback();
                 return false;
             }
 
@@ -30,13 +30,34 @@ public class UserDAO {
             txn.commit();
             return true;
         } catch (Exception e) {
-            txn.rollback();
             return false;
+        } finally {
+            if (txn.isActive()) {
+                txn.rollback();
+            }
         }
     }
 
-    public void updateUser(UserEntity user) {
-        datastore.put(user.toEntity(datastore));
+    public boolean updateUser(UserEntity user) {
+        Transaction txn = datastore.newTransaction();
+        try {
+            Key key = datastore.newKeyFactory().setKind("User").newKey(user.username);
+
+            Entity exists = txn.get(key);
+            if (exists == null) {
+                return false;
+            }
+
+            txn.put(user.toEntity(datastore));
+            txn.commit();
+            return true;
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (txn.isActive()) {
+                txn.rollback();
+            }
+        }
     }
 
     public UserEntity getUser(String username) {
@@ -54,11 +75,17 @@ public class UserDAO {
         return userList;
     }
 
-    public void deleteUser(String username) {
+    public boolean deleteUser(String username) {
         Transaction txn = datastore.newTransaction();
         try {
             Key key = datastore.newKeyFactory().setKind("User").newKey(username);
-            datastore.delete(key);
+
+            Entity exists = txn.get(key);
+            if (exists == null) {
+                return false;
+            }
+
+            txn.delete(key);
 
             List<TokenEntity> tokens = tokenDAO.getUserTokens(username);
             for (TokenEntity token : tokens) {
@@ -66,6 +93,9 @@ public class UserDAO {
             }
 
             txn.commit();
+            return true;
+        } catch (Exception e) {
+            return false;
         } finally  {
             if (txn.isActive()) {
                 txn.rollback();

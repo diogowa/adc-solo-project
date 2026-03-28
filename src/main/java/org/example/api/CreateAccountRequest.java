@@ -14,17 +14,13 @@ public class CreateAccountRequest {
         return phone != null && phone.matches("\\d{4,15}");
     }
 
-    private boolean isValidRole(Role role) {
-        return role != null;
-    }
-
     public boolean isValid() {
         return username != null && !username.isBlank()
                 && password != null && !password.isBlank()
                 && confirmation != null && !confirmation.isBlank()
                 && address != null && !address.isBlank()
                 && isValidPhone(phone)
-                && isValidRole(role)
+                && role != null
                 && username.contains("@")
                 && password.equals(confirmation);
     }
