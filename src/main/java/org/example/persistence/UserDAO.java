@@ -87,9 +87,9 @@ public class UserDAO {
 
             txn.delete(key);
 
-            List<TokenEntity> tokens = tokenDAO.getUserTokens(username);
+            List<TokenEntity> tokens = tokenDAO.getUserTokens(username, txn);
             for (TokenEntity token : tokens) {
-                tokenDAO.deleteToken(token.tokenId);
+                tokenDAO.deleteToken(token.tokenId, txn);
             }
 
             txn.commit();

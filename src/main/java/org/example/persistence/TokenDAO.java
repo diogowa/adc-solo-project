@@ -22,12 +22,12 @@ public class TokenDAO {
         return TokenEntity.fromEntity(datastore.get(key));
     }
 
-    public List<TokenEntity> getUserTokens(String username) {
+    public List<TokenEntity> getUserTokens(String username, Transaction txn) {
         Query<Entity> query = Query.newEntityQueryBuilder()
                 .setKind("Token")
                 .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
                 .build();
-        QueryResults<Entity> tokens = datastore.run(query);
+        QueryResults<Entity> tokens = txn.run(query);
 
         List<TokenEntity> tokenList = new ArrayList<>();
         tokens.forEachRemaining(entity -> tokenList.add(TokenEntity.fromEntity(entity)));
@@ -45,8 +45,8 @@ public class TokenDAO {
         return tokenList;
     }
 
-    public void deleteToken(String tokenId) {
+    public void deleteToken(String tokenId, Transaction txn) {
         Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
-        datastore.delete(key);
+        txn.delete(key);
     }
 }

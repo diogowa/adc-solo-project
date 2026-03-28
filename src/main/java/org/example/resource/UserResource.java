@@ -308,4 +308,27 @@ public class UserResource {
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @POST
+    @Path("/changeuserpwd")
+    public Response changeUserPassword(InputTokenWrapper<ChangeUserPasswordRequest> body) {
+        ChangeUserPasswordRequest req = body.input;
+
+        LOG.fine("changeUserPassword: " + req.username);
+
+        if (!req.isValid() || !body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+
+        try {
+
+
+        } catch (DatastoreException e) {
+            LOG.severe("Datastore could not change user password: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            LOG.severe("Unexpected error when changing user password: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
