@@ -103,8 +103,8 @@ public class UserResource {
 
     @POST
     @Path("/deleteaccount")
-    public Response deleteAccount(InputTokenWrapper<DeleteAccountRequest> body) {
-        DeleteAccountRequest req = body.input;
+    public Response deleteAccount(InputTokenWrapper<UsernameRequest> body) {
+        UsernameRequest req = body.input;
 
         LOG.fine("deleteAccount: " + req.username);
 
@@ -197,6 +197,46 @@ public class UserResource {
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             LOG.severe("Unexpected error when modifying an account: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
+    @Path("showuserrole")
+    public Response showUserRole(InputTokenWrapper<UsernameRequest> body) {
+        UsernameRequest req = body.input;
+
+        LOG.fine("showUserRole: " + req.username);
+
+        if (!req.isValid() || !body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+
+        try {
+            UserEntity user = userDAO.getUser(req.username);
+            if (user == null) {
+                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
+            }
+
+            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
+            if (token == null) {
+                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
+            }
+
+            if (token.isExpired()) {
+                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
+            }
+
+            if (token.role.equals(Role.BOFFICER) || token.role.equals(Role.ADMIN)) {
+                return ResponseHelper.ok(Map.of("username", user.username, "role", user.role.toString()));
+            } else {
+                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            }
+        } catch (DatastoreException e) {
+            LOG.severe("Datastore could not show user role: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            LOG.severe("Unexpected error when showing user role: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }

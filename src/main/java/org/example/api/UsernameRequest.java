@@ -1,6 +1,6 @@
 package org.example.api;
 
-public class DeleteAccountRequest {
+public class UsernameRequest {
     public String username;
 
     public boolean isValid() {
