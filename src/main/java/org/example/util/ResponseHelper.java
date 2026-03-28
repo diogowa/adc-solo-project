@@ -2,6 +2,7 @@ package org.example.util;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import org.example.persistence.StatusDAO;
 
 import java.util.Map;
 
@@ -16,7 +17,22 @@ public class ResponseHelper {
     public static final String FORBIDDEN = "The operation generated a forbidden error by other reason";
     public static final String INTERNAL_SERVER_ERROR = "An error occurred while processing the request";
 
-    public static Response ok(Map<String, Object> entity) {
+    public static Response createResponse(StatusDAO error, Map<String, Object> entity) {
+        return switch (error) {
+            case SUCCESS -> ok(entity);
+            case INVALID_CREDENTIALS -> error(INVALID_CREDENTIALS);
+            case USER_ALREADY_EXISTS -> error(USER_ALREADY_EXISTS);
+            case USER_NOT_FOUND -> error(USER_NOT_FOUND);
+            case INVALID_TOKEN -> error(INVALID_TOKEN);
+            case TOKEN_EXPIRED -> error(TOKEN_EXPIRED);
+            case UNAUTHORIZED -> error(UNAUTHORIZED);
+            case INVALID_INPUT -> error(INVALID_INPUT);
+            case FORBIDDEN -> error(FORBIDDEN);
+            default -> error(INTERNAL_SERVER_ERROR);
+        };
+    }
+
+    private static Response ok(Map<String, Object> entity) {
         return Response.ok(Map.of("status", "success", "data", entity)).build();
     }
 

@@ -1,6 +1,7 @@
 package org.example.persistence;
 
-public enum ErrorDAO {
+public enum StatusDAO {
+    SUCCESS,
     INVALID_CREDENTIALS,
     USER_ALREADY_EXISTS,
     USER_NOT_FOUND,
