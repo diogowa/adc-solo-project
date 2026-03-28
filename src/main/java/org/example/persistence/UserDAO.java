@@ -1,6 +1,7 @@
 package org.example.persistence;
 
 import com.google.cloud.datastore.*;
+import org.example.model.TokenEntity;
 import org.example.model.UserEntity;
 
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ public class UserDAO {
             .setProjectId("individual-project-491518")
             .build()
             .getService();
+
+    private final TokenDAO tokenDAO = new TokenDAO();
 
     public boolean createUser(UserEntity user) {
         Transaction txn = datastore.newTransaction();
@@ -52,7 +55,21 @@ public class UserDAO {
     }
 
     public void deleteUser(String username) {
-        Key key = datastore.newKeyFactory().setKind("User").newKey(username);
-        datastore.delete(key);
+        Transaction txn = datastore.newTransaction();
+        try {
+            Key key = datastore.newKeyFactory().setKind("User").newKey(username);
+            datastore.delete(key);
+
+            List<TokenEntity> tokens = tokenDAO.getUserTokens(username);
+            for (TokenEntity token : tokens) {
+                tokenDAO.deleteToken(token.tokenId);
+            }
+
+            txn.commit();
+        } finally  {
+            if (txn.isActive()) {
+                txn.rollback();
+            }
+        }
     }
 }

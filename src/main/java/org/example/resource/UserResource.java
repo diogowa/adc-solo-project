@@ -108,19 +108,19 @@ public class UserResource {
 
         LOG.fine("deleteAccount: " + req.username);
 
-        if (!req.isValid() && !body.token.isValid()) {
+        if (!req.isValid() || !body.token.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
         }
 
         try {
+            UserEntity user = userDAO.getUser(req.username);
+            if (user == null) {
+                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
+            }
+
             TokenEntity token = tokenDAO.getToken(body.token.tokenId);
             if (token == null) {
                 return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
-            }
-
-            if (!req.username.equals(token.username)) {
-                LOG.severe("Token does not belong to the user: " + req.username + " belongs to: " + token.username);
-                return ResponseHelper.error(ResponseHelper.FORBIDDEN);
             }
 
             if (token.isExpired()) {
@@ -132,13 +132,71 @@ public class UserResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            userDAO.deleteUser(req.username);
+            userDAO.deleteUser(user.username);
             return ResponseHelper.ok(Map.of("message", "Account deleted successfully"));
         } catch (DatastoreException e) {
             LOG.severe("Datastore could not delete account: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             LOG.severe("Unexpected error when deleting an account: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
+    @Path("modaccount")
+    public Response modifyAccount(InputTokenWrapper<ModifyAccountRequest> body) {
+        ModifyAccountRequest req = body.input;
+
+        LOG.fine("modifyAccount: " + req.username);
+
+        if (!req.isValid() || !body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+
+        try {
+            UserEntity user = userDAO.getUser(req.username);
+            if (user == null) {
+                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
+            }
+
+            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
+            if (token == null) {
+                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
+            }
+
+            if (token.isExpired()) {
+                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
+            }
+
+            UserEntity newUser = new UserEntity(
+                    user.username,
+                    user.password,
+                    req.attributes.phone,
+                    req.attributes.address,
+                    user.role);
+
+            if (token.role.equals(Role.USER) && user.username.equals(token.username)) {
+                userDAO.updateUser(newUser);
+                return ResponseHelper.ok(Map.of("message", "Update successfully"));
+
+            } else if (token.role.equals(Role.BOFFICER)
+                    && (user.username.equals(token.username) || user.role.equals(Role.USER))) {
+                userDAO.updateUser(newUser);
+                return ResponseHelper.ok(Map.of("message", "Update successfully"));
+
+            } else if (token.role.equals(Role.ADMIN)) {
+                userDAO.updateUser(newUser);
+                return ResponseHelper.ok(Map.of("message", "Update successfully"));
+
+            } else {
+                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            }
+        } catch (DatastoreException e) {
+            LOG.severe("Datastore could not modify account: " + e.getMessage());
+            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            LOG.severe("Unexpected error when modifying an account: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
