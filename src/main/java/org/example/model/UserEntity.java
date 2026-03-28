@@ -3,6 +3,7 @@ package org.example.model;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class UserEntity {
     public String username;
@@ -15,7 +16,7 @@ public class UserEntity {
 
     public UserEntity(String username, String password, String phone, String address, Role role) {
         this.username = username;
-        this.password = password;
+        this.password = DigestUtils.sha512Hex(password);
         this.phone = phone;
         this.address = address;
         this.role = role;
