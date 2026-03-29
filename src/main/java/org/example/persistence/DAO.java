@@ -53,7 +53,7 @@ public class DAO {
     public void createUser(String username, String password, String phone, String address, Role role) {
         UserEntity newUser = new UserEntity(
                 username,
-                DigestUtils.sha256Hex(password),
+                DigestUtils.sha512Hex(password),
                 phone,
                 address,
                 role);
