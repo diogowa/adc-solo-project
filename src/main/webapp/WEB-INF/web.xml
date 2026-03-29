@@ -28,10 +28,10 @@
             <param-value>/rest/*</param-value>
         </init-param>
 
-        <init-param>
-            <param-name>jersey.config.server.tracing.type</param-name>
-            <param-value>NONE</param-value> <!-- This is a debug utility that should be disabled when code goes to production -->
-        </init-param>
+<!--        <init-param>-->
+<!--            <param-name>jersey.config.server.tracing.type</param-name>-->
+<!--            <param-value>ALL</param-value> &lt;!&ndash; This is a debug utility that should be disabled when code goes to production &ndash;&gt;-->
+<!--        </init-param>-->
 
         <load-on-startup>1</load-on-startup>
     </servlet>
