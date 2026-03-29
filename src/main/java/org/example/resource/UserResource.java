@@ -1,6 +1,5 @@
 package org.example.resource;
 
-import com.google.cloud.datastore.DatastoreException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -64,7 +63,7 @@ public class UserResource {
         try {
             TokenEntity token = tokenDAO.validateToken(body.token.tokenId);
 
-            if (! (token.role.equals(Role.ADMIN) || token.role.equals(Role.BOFFICER)) ) {
+            if (token.role.equals(Role.USER)) {
                 LOG.warning("Unauthorized role: " + token.role);
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
@@ -99,7 +98,6 @@ public class UserResource {
             }
 
             userDAO.deleteUser(req.username);
-            tokenDAO.deleteUserTokens(req.username);
             return ResponseHelper.ok(Map.of("message", "Account deleted successfully"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
@@ -154,28 +152,16 @@ public class UserResource {
         }
 
         try {
+            TokenEntity token = tokenDAO.validateToken(body.token.tokenId);
             UserEntity user = userDAO.getUser(req.username);
-            if (user == null) {
-                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
-            }
 
-            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
-            if (token == null) {
-                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
-            }
-
-            if (token.isExpired()) {
-                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
-            }
-
-            if (token.role.equals(Role.BOFFICER) || token.role.equals(Role.ADMIN)) {
-                return ResponseHelper.ok(Map.of("username", user.username, "role", user.role.toString()));
-            } else {
+            if (user.role.equals(Role.USER)) {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
-        } catch (DatastoreException e) {
-            LOG.severe("Datastore could not show user role: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+
+            return ResponseHelper.ok(Map.of("username", user.username, "role", user.role.toString()));
+        } catch (RuntimeException ex) {
+            return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
             LOG.severe("Unexpected error when showing user role: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
@@ -194,40 +180,17 @@ public class UserResource {
         }
 
         try {
+            TokenEntity token = tokenDAO.validateToken(body.token.tokenId);
             UserEntity user = userDAO.getUser(req.username);
-            if (user == null) {
-                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
-            }
-
-            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
-            if (token == null) {
-                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
-            }
-
-            if (token.isExpired()) {
-                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
-            }
 
             if (!token.role.equals(Role.ADMIN)) {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            UserEntity newUser = new UserEntity(
-                    user.username,
-                    user.password,
-                    user.phone,
-                    user.address,
-                    req.newRole);
-
-            boolean updated = userDAO.updateUser(newUser);
-            if (updated) {
-                return ResponseHelper.ok(Map.of("message", "Role updated successfully"));
-            } else {
-                return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
-            }
-        } catch (DatastoreException e) {
-            LOG.severe("Datastore could not change user role: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+            userDAO.updateUser(user.username, user.password, user.phone, user.address, req.newRole);
+            return ResponseHelper.ok(Map.of("message", "Role updated successfully"));
+        } catch (RuntimeException ex) {
+            return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
             LOG.severe("Unexpected error when changing user role: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);

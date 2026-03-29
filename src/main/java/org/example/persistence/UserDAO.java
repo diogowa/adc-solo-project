@@ -1,6 +1,7 @@
 package org.example.persistence;
 
 import com.google.cloud.datastore.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.example.model.Role;
 import org.example.model.UserEntity;
 import org.example.util.ResponseHelper;
@@ -14,17 +15,17 @@ public class UserDAO {
             .build()
             .getService();
 
-    private final TokenDAO tokenDAO = new TokenDAO();
+    private final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
 
-    public void createUser(String username, String password, String phone, String address, Role role) throws RuntimeException {
+    public void createUser(String username, String password, String phone, String address, Role role) {
         UserEntity newUser = new UserEntity(username, password, phone, address, role);
 
         Transaction txn = datastore.newTransaction();
         try {
-            Key key = datastore.newKeyFactory().setKind("User").newKey(username);
+            Key key = userKeyFactory.newKey(username);
 
-            Entity exists = txn.get(key);
-            if (exists != null) {
+            Entity entity = txn.get(key);
+            if (entity != null) {
                 throw new RuntimeException(ResponseHelper.USER_ALREADY_EXISTS);
             }
 
@@ -46,10 +47,10 @@ public class UserDAO {
 
         Transaction txn = datastore.newTransaction();
         try {
-            Key key = datastore.newKeyFactory().setKind("User").newKey(username);
+            Key key = userKeyFactory.newKey(username);
 
-            Entity exists = txn.get(key);
-            if (exists == null) {
+            Entity entity = txn.get(key);
+            if (entity == null) {
                 throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
             }
 
@@ -67,17 +68,17 @@ public class UserDAO {
     }
 
     public UserEntity getUser(String username) {
-        Key key = datastore.newKeyFactory().setKind("User").newKey(username);
+        Key key = userKeyFactory.newKey(username);
 
-        Entity exists = datastore.get(key);
-        if (exists == null) {
+        Entity entity = datastore.get(key);
+        if (entity == null) {
             throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
         }
 
-        return UserEntity.fromEntity(exists);
+        return UserEntity.fromEntity(entity);
     }
 
-    public List<UserEntity> getUsers() throws RuntimeException {
+    public List<UserEntity> getUsers() {
         Query<Entity> query = Query.newEntityQueryBuilder().setKind("User").build();
         QueryResults<Entity> users = datastore.run(query);
 
@@ -87,13 +88,13 @@ public class UserDAO {
         return userList;
     }
 
-    public void deleteUser(String username) throws RuntimeException {
+    public void deleteUser(String username) {
         Transaction txn = datastore.newTransaction();
         try {
-            Key key = datastore.newKeyFactory().setKind("User").newKey(username);
+            Key key = userKeyFactory.newKey(username);
 
-            Entity exists = txn.get(key);
-            if (exists == null) {
+            Entity entity = txn.get(key);
+            if (entity == null) {
                 throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
             }
 
@@ -108,5 +109,18 @@ public class UserDAO {
                 txn.rollback();
             }
         }
+    }
+
+    public UserEntity login(String username, String password) {
+        UserEntity user = getUser(username);
+        if (user == null) {
+            throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
+        }
+
+        if (!user.password.equals(DigestUtils.sha512Hex(password))) {
+            throw new RuntimeException(ResponseHelper.INVALID_CREDENTIALS);
+        }
+
+        return user;
     }
 }

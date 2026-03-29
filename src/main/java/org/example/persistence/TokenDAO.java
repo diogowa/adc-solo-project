@@ -1,6 +1,7 @@
 package org.example.persistence;
 
 import com.google.cloud.datastore.*;
+import org.example.model.Role;
 import org.example.model.TokenEntity;
 import org.example.util.ResponseHelper;
 
@@ -13,12 +14,10 @@ public class TokenDAO {
             .build()
             .getService();
 
-    public void saveToken(TokenEntity token) {
-        datastore.put(token.toEntity(datastore));
-    }
+    private final KeyFactory tokenKeyFactory = datastore.newKeyFactory().setKind("Token");
 
-    public TokenEntity validateToken(String tokenId) throws RuntimeException {
-        Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
+    public TokenEntity validateToken(String tokenId) {
+        Key key = tokenKeyFactory.newKey(tokenId);
 
         Entity entity = datastore.get(key);
         if (entity == null) {
@@ -30,31 +29,21 @@ public class TokenDAO {
             throw new RuntimeException(ResponseHelper.TOKEN_EXPIRED);
         }
 
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey(token.username);
+        Entity userEntity = datastore.get(userKey);
+        if (userEntity == null) {
+            throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
+        }
+
         return token;
     }
 
-    public TokenEntity getToken(String tokenId) {
-        Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
+    public TokenEntity saveToken(String username, Role role) {
+        TokenEntity token = new TokenEntity(username, role);
 
-        Entity exists = datastore.get(key);
-        if (exists == null) {
-            throw new RuntimeException(ResponseHelper.TOKEN_EXPIRED);
-        }
+        datastore.put(token.toEntity(datastore));
 
-        return TokenEntity.fromEntity(exists);
-    }
-
-    public List<TokenEntity> getUserTokens(String username) {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind("Token")
-                .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
-                .build();
-        QueryResults<Entity> tokens = datastore.run(query);
-
-        List<TokenEntity> tokenList = new ArrayList<>();
-        tokens.forEachRemaining(entity -> tokenList.add(TokenEntity.fromEntity(entity)));
-
-        return tokenList;
+        return token;
     }
 
     public List<TokenEntity> getAllTokens() {
@@ -65,36 +54,5 @@ public class TokenDAO {
         tokens.forEachRemaining(entity -> tokenList.add(TokenEntity.fromEntity(entity)));
 
         return tokenList;
-    }
-
-    public void deleteToken(String tokenId) {
-        Transaction txn = datastore.newTransaction();
-        try {
-            Key key = datastore.newKeyFactory().setKind("Token").newKey(tokenId);
-
-            Entity exists = txn.get(key);
-            if (exists == null) {
-                throw new RuntimeException(ResponseHelper.TOKEN_EXPIRED);
-            }
-
-            txn.delete(key);
-
-            txn.commit();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(ResponseHelper.INTERNAL_SERVER_ERROR);
-        } finally  {
-            if (txn.isActive()) {
-                txn.rollback();
-            }
-        }
-    }
-
-    public void deleteUserTokens(String username) {
-        List<TokenEntity> tokens = getUserTokens(username);
-        for (TokenEntity token : tokens) {
-            deleteToken(token.tokenId);
-        }
     }
 }
