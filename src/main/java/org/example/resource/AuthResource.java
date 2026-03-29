@@ -12,9 +12,7 @@ import org.example.api.InputWrapper;
 import org.example.api.LoginRequest;
 import org.example.model.Role;
 import org.example.model.TokenEntity;
-import org.example.model.UserEntity;
-import org.example.persistence.TokenDAO;
-import org.example.persistence.UserDAO;
+import org.example.persistence.DAO;
 import org.example.util.ResponseHelper;
 
 import java.util.List;
@@ -27,8 +25,7 @@ import java.util.logging.Logger;
 public class AuthResource {
     private static final Logger LOG = Logger.getLogger(AuthResource.class.getName());
 
-    private final UserDAO userDAO = new UserDAO();
-    private final TokenDAO tokenDAO = new TokenDAO();
+    private final DAO dao = new DAO();
 
     public AuthResource() {}
 
@@ -44,8 +41,7 @@ public class AuthResource {
         }
 
         try {
-            UserEntity user = userDAO.login(req.username, req.password);
-            TokenEntity token = tokenDAO.saveToken(user.username, user.role);
+            TokenEntity token = dao.login(req.username, req.password);
 
             return ResponseHelper.ok(Map.of(
                     "tokenId", token.tokenId,
@@ -72,14 +68,14 @@ public class AuthResource {
         }
 
         try {
-            TokenEntity token = tokenDAO.validateToken(body.token.tokenId);
+            TokenEntity token = dao.validateToken(body.token.tokenId);
 
             if (!token.role.equals(Role.ADMIN)) {
                 LOG.warning("Unauthorized role: " + token.role);
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            List<TokenEntity> tokens = tokenDAO.getAllTokens();
+            List<TokenEntity> tokens = dao.getAllTokens();
             return ResponseHelper.ok(Map.of("sessions", tokens));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
