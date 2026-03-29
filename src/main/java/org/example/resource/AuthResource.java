@@ -64,7 +64,7 @@ public class AuthResource {
         }
 
         try {
-            TokenEntity token = dao.validateToken(req.username);
+            TokenEntity token = dao.validateToken(body.token.tokenId);
 
             if (!token.username.equals(req.username) && !token.role.equals(Role.ADMIN)) {
                 LOG.warning("Unauthorized role: " + token.role);

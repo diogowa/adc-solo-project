@@ -41,7 +41,12 @@ public class DAO {
     }
 
     public void createUser(String username, String password, String phone, String address, Role role) {
-        UserEntity newUser = new UserEntity(username, password, phone, address, role);
+        UserEntity newUser = new UserEntity(
+                username,
+                DigestUtils.sha256Hex(password),
+                phone,
+                address,
+                role);
 
         Transaction txn = datastore.newTransaction();
         try {
@@ -72,7 +77,7 @@ public class DAO {
         }
 
         UserEntity user = UserEntity.fromEntity(entity);
-        if (!user.password.equals(DigestUtils.sha512Hex(password))) {
+        if (!user.hashPassword.equals(DigestUtils.sha512Hex(password))) {
             throw new RuntimeException(ResponseHelper.INVALID_CREDENTIALS);
         }
 
@@ -127,7 +132,7 @@ public class DAO {
         UserEntity user = getUser(username);
         UserEntity newUser = new UserEntity(
                 user.username,
-                user.password,
+                user.hashPassword,
                 newPhone,
                 newAddress,
                 user.role
@@ -139,7 +144,7 @@ public class DAO {
         UserEntity user = getUser(username);
         UserEntity newUser = new UserEntity(
                 user.username,
-                user.password,
+                user.hashPassword,
                 user.phone,
                 user.address,
                 newRole
@@ -150,7 +155,7 @@ public class DAO {
     public void changeUserPassword(String username, String oldPassword, String newPassword) {
         UserEntity user = getUser(username);
 
-        if (!user.password.equals(DigestUtils.sha512Hex(oldPassword))) {
+        if (!user.hashPassword.equals(DigestUtils.sha512Hex(oldPassword))) {
             throw new RuntimeException(ResponseHelper.INVALID_CREDENTIALS);
         }
 
