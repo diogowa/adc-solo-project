@@ -22,9 +22,7 @@ public class ResponseHelper {
 
     public static Response error(String message) {
         String messageCode = getMessageCode(message);
-        return Response.status(getHttpStatus(messageCode))
-                .entity(Map.of("status", messageCode, "data", message))
-                .build();
+        return Response.ok(Map.of("status", messageCode, "data", message)).build();
     }
 
     private static String getMessageCode(String message) {
@@ -38,17 +36,6 @@ public class ResponseHelper {
             case INVALID_INPUT -> "9906";
             case FORBIDDEN -> "9907";
             default -> "500";
-        };
-    }
-
-    private static int getHttpStatus(String errorCode) {
-        return switch (errorCode) {
-            case "9900", "9903", "9904" -> Status.UNAUTHORIZED.getStatusCode();
-            case "9901" -> Status.CONFLICT.getStatusCode();
-            case "9902" -> Status.NOT_FOUND.getStatusCode();
-            case "9905", "9907" -> Status.FORBIDDEN.getStatusCode();
-            case "9906" -> Status.BAD_REQUEST.getStatusCode();
-            default -> Status.INTERNAL_SERVER_ERROR.getStatusCode();
         };
     }
 }
