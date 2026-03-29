@@ -63,7 +63,7 @@ public class UserResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            List<UserEntity> users = dao.getUsers();
+            List<UserEntity> users = dao.getAllUsers();
             return ResponseHelper.ok(Map.of("users", users));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
