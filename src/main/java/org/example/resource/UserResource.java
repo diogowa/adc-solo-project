@@ -13,6 +13,7 @@ import org.example.model.UserEntity;
 import org.example.persistence.DAO;
 import org.example.util.ResponseHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -63,8 +64,12 @@ public class UserResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            List<UserEntity> users = dao.getAllUsers();
-            return ResponseHelper.ok(Map.of("users", users));
+            List<Map<String, Object>> result = dao.getAllUsers()
+                    .stream()
+                    .map(u -> Map.<String, Object>of("username", u.username, "role", u.role.toString()))
+                    .toList();
+
+            return ResponseHelper.ok(Map.of("users", result));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {

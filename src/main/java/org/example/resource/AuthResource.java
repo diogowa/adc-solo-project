@@ -40,13 +40,13 @@ public class AuthResource {
         try {
             TokenEntity token = dao.login(req.username, req.password);
 
-            return ResponseHelper.ok(Map.of(
+            return ResponseHelper.ok(Map.of("token", Map.of(
                     "tokenId", token.tokenId,
                     "username", token.username,
                     "role", token.role,
                     "issuedAt", token.issuedAt,
                     "expiresAt", token.expiresAt
-            ));
+            )));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         }
@@ -95,8 +95,17 @@ public class AuthResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            List<TokenEntity> tokens = dao.getAllTokens();
-            return ResponseHelper.ok(Map.of("sessions", tokens));
+            List<Map<String, Object>> result = dao.getAllTokens()
+                    .stream()
+                    .map(t -> Map.<String, Object>of(
+                            "tokenId", t.tokenId,
+                            "username", t.username,
+                            "role", t.role.toString(),
+                            "expiresAt", t.expiresAt
+                    ))
+                    .toList();
+
+            return ResponseHelper.ok(Map.of("sessions", result));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
