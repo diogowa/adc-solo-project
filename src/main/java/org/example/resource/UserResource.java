@@ -13,7 +13,6 @@ import org.example.model.UserEntity;
 import org.example.persistence.DAO;
 import org.example.util.ResponseHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
