@@ -66,13 +66,14 @@ public class AuthResource {
         try {
             TokenEntity token = dao.validateToken(body.token.tokenId);
 
-            if (!token.username.equals(req.username) && !token.role.equals(Role.ADMIN)) {
-                LOG.warning("Unauthorized role: " + token.role);
-                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            if (token.role.equals(Role.ADMIN)
+                    || (token.role.equals(Role.USER) && token.username.equals(req.username))
+                    || (token.role.equals(Role.BOFFICER) && token.username.equals(req.username))) {
+                dao.logout(token.tokenId);
+                return ResponseHelper.ok(Map.of("message", "Logout successful"));
+            } else {
+                return ResponseHelper.error(ResponseHelper.FORBIDDEN);
             }
-
-            dao.logout(req.username, token.tokenId);
-            return ResponseHelper.ok(Map.of("message", "Logout successful"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         }

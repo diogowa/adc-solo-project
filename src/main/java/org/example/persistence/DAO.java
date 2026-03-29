@@ -179,16 +179,11 @@ public class DAO {
         return tokenList;
     }
 
-    public void logout(String username, String tokenId) {
+    public void logout(String tokenId) {
         Key tokenKey = tokenKeyFactory.newKey(tokenId);
         Entity tokenEntity = datastore.get(tokenKey);
         if (tokenEntity == null) {
             throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
-        }
-
-        TokenEntity token = TokenEntity.fromEntity(tokenEntity);
-        if (!token.username.equals(username)) {
-            throw new RuntimeException(ResponseHelper.FORBIDDEN);
         }
 
         datastore.delete(tokenKey);

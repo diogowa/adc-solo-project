@@ -66,7 +66,8 @@ public class UserResource {
 
             List<Map<String, Object>> result = dao.getAllUsers()
                     .stream()
-                    .map(u -> Map.<String, Object>of("username", u.username, "role", u.role.toString()))
+                    .map(u ->
+                            Map.<String, Object>of("username", u.username, "role", u.role.toString()))
                     .toList();
 
             return ResponseHelper.ok(Map.of("users", result));
