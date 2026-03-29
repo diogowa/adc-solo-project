@@ -245,4 +245,32 @@ public class DAO {
 
         return tokenList;
     }
+
+    public void logout(String username, String tokenId) {
+        Transaction txn = datastore.newTransaction();
+        try {
+            Key userKey = userKeyFactory.newKey(username);
+            Entity userEntity = txn.get(userKey);
+            if (userEntity == null) {
+                throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
+            }
+
+            Key tokenKey = tokenKeyFactory.newKey(tokenId);
+            Entity tokenEntity = txn.get(tokenKey);
+            if (tokenEntity == null) {
+                throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
+            }
+
+            txn.delete(tokenKey);
+            txn.commit();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } finally {
+            if (txn.isActive()) {
+                txn.rollback();
+            }
+        }
+    }
 }

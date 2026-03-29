@@ -6,10 +6,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.example.api.EmptyRequest;
-import org.example.api.InputTokenWrapper;
-import org.example.api.InputWrapper;
-import org.example.api.LoginRequest;
+import org.example.api.*;
 import org.example.model.Role;
 import org.example.model.TokenEntity;
 import org.example.persistence.DAO;
@@ -52,9 +49,32 @@ public class AuthResource {
             ));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
-        } catch (Exception e) {
-            LOG.severe("Unexpected error when login in: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
+    @Path("/logout")
+    public Response logout(InputTokenWrapper<UsernameRequest> body) {
+        UsernameRequest req = body.input;
+
+        LOG.fine("logout: " + req.username);
+
+        if (!req.isValid() || !body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+
+        try {
+            TokenEntity token = dao.validateToken(req.username);
+
+            if (!token.username.equals(req.username) && !token.role.equals(Role.ADMIN)) {
+                LOG.warning("Unauthorized role: " + token.role);
+                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            }
+
+            dao.logout(req.username, token.tokenId);
+            return ResponseHelper.ok(Map.of("message", "Logout successful"));
+        } catch (RuntimeException ex) {
+            return ResponseHelper.error(ex.getMessage());
         }
     }
 

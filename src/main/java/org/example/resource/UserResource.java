@@ -43,9 +43,6 @@ public class UserResource {
             return ResponseHelper.ok(Map.of("username", req.username, "role", req.role));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
-        } catch (Exception e) {
-            LOG.severe("Unexpected error creating account: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -99,9 +96,6 @@ public class UserResource {
             return ResponseHelper.ok(Map.of("message", "Account deleted successfully"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
-        } catch (Exception e) {
-            LOG.severe("Unexpected error when deleting an account: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
 
