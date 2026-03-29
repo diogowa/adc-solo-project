@@ -182,4 +182,18 @@ public class DAO {
 
         datastore.delete(tokenKey);
     }
+
+    // to only be used by admin
+    public void logoutUser(String username) {
+        Query<Entity> query = Query.newEntityQueryBuilder()
+                .setKind("Token")
+                .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
+                .build();
+        QueryResults<Entity> tokens = datastore.run(query);
+
+        List<Key> keysToDelete = new ArrayList<>();
+        tokens.forEachRemaining(e -> keysToDelete.add(e.getKey()));
+
+        datastore.delete(keysToDelete.toArray(new Key[0]));
+    }
 }
