@@ -172,6 +172,7 @@ public class DAO {
             }
 
             txn.put(newUser.toEntity(datastore));
+            txn.commit();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
