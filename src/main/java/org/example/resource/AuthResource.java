@@ -1,13 +1,11 @@
 package org.example.resource;
 
-import com.google.cloud.datastore.DatastoreException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.example.api.EmptyRequest;
 import org.example.api.InputTokenWrapper;
 import org.example.api.InputWrapper;
@@ -46,18 +44,9 @@ public class AuthResource {
         }
 
         try {
-            UserEntity user = userDAO.getUser(req.username);
-            if (user == null) {
-                return ResponseHelper.error(ResponseHelper.USER_NOT_FOUND);
-            }
+            UserEntity user = userDAO.login(req.username, req.password);
+            TokenEntity token = tokenDAO.saveToken(user.username, user.role);
 
-            if (!user.password.equals(DigestUtils.sha512Hex(req.password))) {
-                LOG.warning("Credentials do not match");
-                return ResponseHelper.error(ResponseHelper.INVALID_CREDENTIALS);
-            }
-
-            TokenEntity token = new TokenEntity(user.username, user.role);
-            tokenDAO.saveToken(token);
             return ResponseHelper.ok(Map.of(
                     "tokenId", token.tokenId,
                     "username", token.username,
@@ -65,11 +54,10 @@ public class AuthResource {
                     "issuedAt", token.issuedAt,
                     "expiresAt", token.expiresAt
             ));
-        } catch (DatastoreException e) {
-            LOG.severe("Datastore could not create token: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException ex) {
+            return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
-            LOG.severe("Unexpected error in login: " + e.getMessage());
+            LOG.severe("Unexpected error when login in: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
         }
     }
@@ -84,14 +72,7 @@ public class AuthResource {
         }
 
         try {
-            TokenEntity token = tokenDAO.getToken(body.token.tokenId);
-            if (token == null) {
-                return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
-            }
-
-            if (token.isExpired()) {
-                return ResponseHelper.error(ResponseHelper.TOKEN_EXPIRED);
-            }
+            TokenEntity token = tokenDAO.validateToken(body.token.tokenId);
 
             if (!token.role.equals(Role.ADMIN)) {
                 LOG.warning("Unauthorized role: " + token.role);
@@ -100,9 +81,8 @@ public class AuthResource {
 
             List<TokenEntity> tokens = tokenDAO.getAllTokens();
             return ResponseHelper.ok(Map.of("sessions", tokens));
-        } catch (DatastoreException e) {
-            LOG.severe("Datastore could not show auth sessions: " + e.getMessage());
-            return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException ex) {
+            return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
             LOG.severe("Unexpected error showing auth sessions: " + e.getMessage());
             return ResponseHelper.error(ResponseHelper.INTERNAL_SERVER_ERROR);
