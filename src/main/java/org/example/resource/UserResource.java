@@ -86,8 +86,11 @@ public class UserResource {
 
         LOG.fine("deleteAccount: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {
@@ -112,25 +115,29 @@ public class UserResource {
 
         LOG.fine("modifyAccount: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {
             TokenEntity token = dao.validateToken(body.token.tokenId);
-            UserEntity user = dao.getUser(req.username);
 
-            boolean canModify = token.role.equals(Role.ADMIN)
-                    || (token.role.equals(Role.BOFFICER) && (user.username.equals(token.username) || user.role.equals(Role.USER)))
-                    || (token.role.equals(Role.USER) && user.username.equals(token.username));
+            if (token.role.equals(Role.ADMIN)
+                    || (token.role.equals(Role.USER) && token.username.equals(req.username))) {
+                dao.modifyUser(req.username, req.attributes.phone, req.attributes.address);
+                return ResponseHelper.ok(Map.of("message", "Updated successfully"));
 
-            if (!canModify) {
-                LOG.warning("Unauthorized role: " + token.role);
-                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            } else if (token.role.equals(Role.BOFFICER)
+                    && (token.username.equals(req.username) || dao.getUser(req.username).role.equals(Role.USER))) {
+                dao.modifyUser(req.username, req.attributes.phone, req.attributes.address);
+                return ResponseHelper.ok(Map.of("message", "Updated successfully"));
+
+            } else {
+                return ResponseHelper.error(ResponseHelper.FORBIDDEN);
             }
-
-            dao.modifyUser(user.username, req.attributes.phone, req.attributes.address);
-            return ResponseHelper.ok(Map.of("message", "Updated successfully"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         }
@@ -143,8 +150,11 @@ public class UserResource {
 
         LOG.fine("showUserRole: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {
@@ -172,8 +182,11 @@ public class UserResource {
 
         LOG.fine("changeUserRole: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {
@@ -198,20 +211,22 @@ public class UserResource {
 
         LOG.fine("changeUserPassword: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {
             TokenEntity token = dao.validateToken(body.token.tokenId);
 
-            if (!token.username.equals(req.username)) {
-                LOG.warning("Unauthorized role: " + token.role);
-                return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
+            if (token.username.equals(req.username)) {
+                dao.changeUserPassword(req.username, req.oldPassword, req.newPassword);
+                return ResponseHelper.ok(Map.of("message", "Password changed successfully"));
+            } else {
+                return ResponseHelper.error(ResponseHelper.FORBIDDEN);
             }
-
-            dao.changeUserPassword(req.username, req.oldPassword, req.newPassword);
-            return ResponseHelper.ok(Map.of("message", "Password changed successfully"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         }

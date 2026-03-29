@@ -59,8 +59,11 @@ public class AuthResource {
 
         LOG.fine("logout: " + req.username);
 
-        if (!req.isValid() || !body.token.isValid()) {
+        if (!req.isValid()) {
             return ResponseHelper.error(ResponseHelper.INVALID_INPUT);
+        }
+        if (!body.token.isValid()) {
+            return ResponseHelper.error(ResponseHelper.INVALID_TOKEN);
         }
 
         try {

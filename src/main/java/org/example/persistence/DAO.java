@@ -21,12 +21,12 @@ public class DAO {
 
     public TokenEntity validateToken(String tokenId) {
         Key key = tokenKeyFactory.newKey(tokenId);
-        Entity tokeneEntity = datastore.get(key);
-        if (tokeneEntity == null) {
+        Entity tokenEntity = datastore.get(key);
+        if (tokenEntity == null) {
             throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
         }
 
-        TokenEntity token = TokenEntity.fromEntity(tokeneEntity);
+        TokenEntity token = TokenEntity.fromEntity(tokenEntity);
         if (token.isExpired()) {
             throw new RuntimeException(ResponseHelper.TOKEN_EXPIRED);
         }
@@ -38,6 +38,16 @@ public class DAO {
         }
 
         return token;
+    }
+
+    public UserEntity getUser(String username) {
+        Key key = userKeyFactory.newKey(username);
+        Entity entity = datastore.get(key);
+        if (entity == null) {
+            throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
+        }
+
+        return UserEntity.fromEntity(entity);
     }
 
     public void createUser(String username, String password, String phone, String address, Role role) {
@@ -70,13 +80,7 @@ public class DAO {
     }
 
     public TokenEntity login(String username, String password) {
-        Key key = userKeyFactory.newKey(username);
-        Entity entity = datastore.get(key);
-        if (entity == null) {
-            throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
-        }
-
-        UserEntity user = UserEntity.fromEntity(entity);
+        UserEntity user = getUser(username);
         if (!user.hashPassword.equals(DigestUtils.sha512Hex(password))) {
             throw new RuntimeException(ResponseHelper.INVALID_CREDENTIALS);
         }
@@ -85,16 +89,6 @@ public class DAO {
 
         datastore.put(token.toEntity(datastore));
         return token;
-    }
-
-    public UserEntity getUser(String username) {
-        Key key = userKeyFactory.newKey(username);
-        Entity entity = datastore.get(key);
-        if (entity == null) {
-            throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
-        }
-
-        return UserEntity.fromEntity(entity);
     }
 
     public List<UserEntity> getAllUsers() {
