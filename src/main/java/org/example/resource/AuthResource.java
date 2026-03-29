@@ -108,7 +108,7 @@ public class AuthResource {
                     .map(t -> Map.<String, Object>of(
                             "tokenId", t.tokenId,
                             "username", t.username,
-                            "role", t.role.toString(),
+                            "role", t.role,
                             "expiresAt", t.expiresAt
                     ))
                     .toList();

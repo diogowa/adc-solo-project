@@ -66,7 +66,7 @@ public class UserResource {
             List<Map<String, Object>> result = dao.getAllUsers()
                     .stream()
                     .map(u ->
-                            Map.<String, Object>of("username", u.username, "role", u.role.toString()))
+                            Map.<String, Object>of("username", u.username, "role", u.role))
                     .toList();
 
             return ResponseHelper.ok(Map.of("users", result));
@@ -165,7 +165,7 @@ public class UserResource {
             }
 
             UserEntity user = dao.getUser(req.username);
-            return ResponseHelper.ok(Map.of("username", user.username, "role", user.role.toString()));
+            return ResponseHelper.ok(Map.of("username", user.username, "role", user.role));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
         } catch (Exception e) {
