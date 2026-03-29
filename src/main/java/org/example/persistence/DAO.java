@@ -182,7 +182,6 @@ public class DAO {
                 txn.rollback();
             }
         }
-
     }
 
     public void changeUserPassword(String username, String oldPassword, String newPassword) {
