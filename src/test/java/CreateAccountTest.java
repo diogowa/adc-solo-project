@@ -312,4 +312,27 @@ public class CreateAccountTest {
                 .body("data.username", equalTo("user1@fct"))
                 .body("data.role", equalTo("USER"));
     }
+
+    @Test
+    void createUser_userAlreadyExists() {
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "user1@fct",
+                                "password": "pwd",
+                                "confirmation": "pwd",
+                                "phone": "1234",
+                                "address": "street",
+                                "role": "USER"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/createaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("9901"));
+    }
 }
