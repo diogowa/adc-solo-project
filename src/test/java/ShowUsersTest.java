@@ -1,7 +1,6 @@
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -9,7 +8,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ShowUsersTest {
 
     private static String userTokenId;
@@ -17,9 +15,12 @@ public class ShowUsersTest {
     private static String bofficerTokenId;
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void setup() {
         RestAssured.baseURI = "http://localhost:8080/rest";
+    }
 
+    @BeforeEach
+    void setupTest() throws Exception {
         // clean database
         URL url = new URL("http://localhost:8081/reset");
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -141,7 +142,6 @@ public class ShowUsersTest {
     }
 
     @Test
-    @Order(1)
     void showUsers_byUser() {
         given()
                 .contentType("application/json")
@@ -162,7 +162,6 @@ public class ShowUsersTest {
     }
 
     @Test
-    @Order(2)
     void showUsers_byBofficer() {
         given()
                 .contentType("application/json")
@@ -184,7 +183,6 @@ public class ShowUsersTest {
     }
 
     @Test
-    @Order(3)
     void showUsers_byAdmin() {
         given()
                 .contentType("application/json")

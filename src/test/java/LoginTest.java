@@ -1,7 +1,6 @@
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -12,9 +11,12 @@ import static org.hamcrest.Matchers.equalTo;
 public class LoginTest {
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void setup() {
         RestAssured.baseURI = "http://localhost:8080/rest";
+    }
 
+    @BeforeEach
+    void setupTest() throws Exception {
         // clean database
         URL url = new URL("http://localhost:8081/reset");
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -44,7 +46,6 @@ public class LoginTest {
     }
 
     @Test
-    @Order(1)
     void login_invalidInput() {
         given()
                 .contentType("application/json")
@@ -64,7 +65,6 @@ public class LoginTest {
     }
 
     @Test
-    @Order(2)
     void login_userNotFound() {
         given()
                 .contentType("application/json")
@@ -84,7 +84,6 @@ public class LoginTest {
     }
 
     @Test
-    @Order(3)
     void login_invalidCredentials() {
         given()
                 .contentType("application/json")
@@ -104,7 +103,6 @@ public class LoginTest {
     }
 
     @Test
-    @Order(4)
     void login_success() {
         given()
                 .contentType("application/json")
@@ -123,11 +121,7 @@ public class LoginTest {
                 .body("status", equalTo("success"))
                 .body("data.token.username", equalTo("user1@fct"))
                 .body("data.token.role", equalTo("USER"));
-    }
 
-    @Test
-    @Order(5)
-    void login_alreadyLoggedIn() {
         given()
                 .contentType("application/json")
                 .body("""
