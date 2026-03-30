@@ -8,10 +8,22 @@ public class CreateAccountRequest {
     public String confirmation;
     public String phone;
     public String address;
-    public Role role; // USER | BOFFICER | ADMIN
+    public String role;
 
     private boolean isValidPhone(String phone) {
         return phone != null && phone.matches("\\d{4,15}");
+    }
+
+    public boolean isValidRole(String role) {
+        if (role == null && role.isEmpty()) {
+            return false;
+        }
+        try {
+            Role.valueOf(role);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     public boolean isValid() {
@@ -20,7 +32,7 @@ public class CreateAccountRequest {
                 && confirmation != null && !confirmation.isBlank()
                 && address != null && !address.isBlank()
                 && isValidPhone(phone)
-                && role != null
+                && isValidRole(role)
                 && username.contains("@")
                 && password.equals(confirmation);
     }

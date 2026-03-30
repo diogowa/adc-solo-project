@@ -39,7 +39,7 @@ public class UserResource {
         }
 
         try {
-            dao.createUser(req.username, req.password, req.phone, req.address, req.role);
+            dao.createUser(req.username, req.password, req.phone, req.address, Role.valueOf(req.role));
             return ResponseHelper.ok(Map.of("username", req.username, "role", req.role));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());
@@ -196,7 +196,7 @@ public class UserResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            dao.changeUserRole(req.username, req.newRole);
+            dao.changeUserRole(req.username, Role.valueOf(req.newRole));
             return ResponseHelper.ok(Map.of("message", "Role updated successfully"));
         } catch (RuntimeException ex) {
             return ResponseHelper.error(ex.getMessage());

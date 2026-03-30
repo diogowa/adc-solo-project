@@ -4,10 +4,22 @@ import org.example.model.Role;
 
 public class ChangeUserRoleRequest {
     public String username;
-    public Role newRole;
+    public String newRole;
+
+    public boolean isValidRole(String newRole) {
+        if (newRole == null && newRole.isEmpty()) {
+            return false;
+        }
+        try {
+            Role.valueOf(newRole);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 
     public boolean isValid() {
         return username != null && !username.isBlank()
-                && newRole != null;
+                && isValidRole(newRole);
     }
 }
