@@ -151,7 +151,22 @@ public class DAO {
     }
 
     public void changeUserRole(String username, Role newRole) {
-        // (*) change roles on tokens - test in emulator
+        Key key = userKeyFactory.newKey(username);
+        Entity entity = datastore.get(key);
+        if (entity == null) {
+            throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
+        }
+
+        UserEntity user = UserEntity.fromEntity(entity);
+        UserEntity newUser = new UserEntity(
+                user.username,
+                user.hashPassword,
+                user.phone,
+                user.address,
+                newRole
+        );
+
+        // update user tokens
         Query<Entity> query = Query.newEntityQueryBuilder()
                 .setKind("Token")
                 .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
@@ -166,40 +181,11 @@ public class DAO {
             updatedTokens.add(updated);
         });
 
-        Transaction txn = datastore.newTransaction();
-        try {
-            Key key = userKeyFactory.newKey(username);
-            Entity entity = txn.get(key);
-            if (entity == null) {
-                throw new RuntimeException(ResponseHelper.USER_NOT_FOUND);
-            }
-
-            UserEntity user = UserEntity.fromEntity(entity);
-            UserEntity newUser = new UserEntity(
-                    user.username,
-                    user.hashPassword,
-                    user.phone,
-                    user.address,
-                    newRole
-            );
-
-            // (*) change roles on tokens should be done here on production
-
-            if (!updatedTokens.isEmpty()) {
-                txn.put(updatedTokens.toArray(new Entity[0]));
-            }
-
-            txn.put(newUser.toEntity(datastore));
-            txn.commit();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(ResponseHelper.INTERNAL_SERVER_ERROR);
-        } finally {
-            if (txn.isActive()) {
-                txn.rollback();
-            }
+        if (!updatedTokens.isEmpty()) {
+            datastore.put(updatedTokens.toArray(new Entity[0]));
         }
+
+        datastore.put(newUser.toEntity(datastore));
     }
 
     public void changeUserPassword(String username, String oldPassword, String newPassword) {
