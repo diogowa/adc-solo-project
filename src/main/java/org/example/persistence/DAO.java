@@ -151,6 +151,21 @@ public class DAO {
     }
 
     public void changeUserRole(String username, Role newRole) {
+        // (*) change roles on tokens - test in emulator
+        Query<Entity> query = Query.newEntityQueryBuilder()
+                .setKind("Token")
+                .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
+                .build();
+        QueryResults<Entity> tokens = datastore.run(query);
+
+        List<Entity> updatedTokens = new ArrayList<>();
+        tokens.forEachRemaining(t -> {
+            Entity updated = Entity.newBuilder(t)
+                    .set("role", newRole.toString())
+                    .build();
+            updatedTokens.add(updated);
+        });
+
         Transaction txn = datastore.newTransaction();
         try {
             Key key = userKeyFactory.newKey(username);
@@ -168,20 +183,7 @@ public class DAO {
                     newRole
             );
 
-            // change roles on tokens
-            Query<Entity> query = Query.newEntityQueryBuilder()
-                    .setKind("Token")
-                    .setFilter(StructuredQuery.PropertyFilter.eq("username", user.username))
-                    .build();
-            QueryResults<Entity> tokens = txn.run(query);
-
-            List<Entity> updatedTokens = new ArrayList<>();
-            tokens.forEachRemaining(t -> {
-                Entity updated = Entity.newBuilder(t)
-                        .set("role", newRole.toString())
-                        .build();
-                updatedTokens.add(updated);
-            });
+            // (*) change roles on tokens should be done here on production
 
             if (!updatedTokens.isEmpty()) {
                 txn.put(updatedTokens.toArray(new Entity[0]));

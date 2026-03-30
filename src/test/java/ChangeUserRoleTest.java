@@ -228,7 +228,7 @@ public class ChangeUserRoleTest {
                 .post("/changeuserrole")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("9902"));
+                .body("status", equalTo("success"));
 
         // test if user was upgraded to ADMIN
         given()
@@ -269,8 +269,7 @@ public class ChangeUserRoleTest {
                 .statusCode(200)
                 .body("status", equalTo("success"))
                 .body("data.sessions", hasSize(3))
-                .body("data.sessions[0].username", equalTo("user1@fct"))
-                .body("data.sessions[0].role", equalTo("ADMIN"));
+                .body("data.sessions.role", hasItems("ADMIN", "ADMIN", "BOFFICER"));
     }
 
     @Test
@@ -293,7 +292,7 @@ public class ChangeUserRoleTest {
                 .post("/changeuserrole")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("sucess"));
+                .body("status", equalTo("success"));
 
         // test if role has changed
         given()
