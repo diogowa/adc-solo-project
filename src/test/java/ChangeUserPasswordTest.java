@@ -503,4 +503,78 @@ public class ChangeUserPasswordTest {
         Entity admin1Entity = datastore.get(admin1Key);
         assertEquals(DigestUtils.sha512Hex("asd"), admin1Entity.getString("password"));
     }
+
+    @Test
+    void changeUserPassword_logoutOfSessions_success() {
+        String tempAdminTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct",
+                                "oldPassword": "pwd",
+                                "newPassword": "asd"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/changeuserpwd")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("9903"));
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(tempAdminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("9903"));
+    }
 }

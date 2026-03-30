@@ -219,7 +219,24 @@ public class LogoutTest {
     }
 
     @Test
-    void logout_userAndBofficer_success() {
+    void logout_user_multipleSessions() {
+        String tempUserTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "user1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
         given()
                 .contentType("application/json")
                 .body("""
@@ -238,25 +255,7 @@ public class LogoutTest {
                 .statusCode(200)
                 .body("status", equalTo("success"));
 
-        given()
-                .contentType("application/json")
-                .body("""
-                            {
-                              "input": {
-                                "username": "bofficer1@fct"
-                              },
-                              "token": {
-                                "tokenId": "%s"
-                              }
-                            }
-                        """.formatted(bofficerTokenId))
-                .when()
-                .post("/logout")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("success"));
-
-        // test if tokens were deleted
+        // test if only userTokenId was deleted
         given()
                 .contentType("application/json")
                 .body("""
@@ -273,12 +272,145 @@ public class LogoutTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.sessions", hasSize(1))
-                .body("data.sessions.username", hasItems("admin1@fct"));
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.tokenId", hasItems(tempUserTokenId, bofficerTokenId, adminTokenId));
     }
 
     @Test
-    void logout_userAndBofficer_byAdmin_success() {
+    void logout_bofficer_multipleSessions() {
+        String tempBofficerTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "bofficer1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "bofficer1@fct"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(tempBofficerTokenId))
+                .when()
+                .post("/logout")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        // test if only bofficerTokenId was deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.tokenId", hasItems(userTokenId, adminTokenId, bofficerTokenId));
+    }
+
+    @Test
+    void logout_admin_multipleSessions() {
+        String tempAdminTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(tempAdminTokenId))
+                .when()
+                .post("/logout")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        // test if only adminTokenId was deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.tokenId", hasItems(userTokenId, bofficerTokenId, adminTokenId));
+    }
+
+    @Test
+    void logout_user_byAdmin() {
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "user1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
         given()
                 .contentType("application/json")
                 .body("""
@@ -297,6 +429,46 @@ public class LogoutTest {
                 .statusCode(200)
                 .body("status", equalTo("success"));
 
+        // test if all tokens were deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(2))
+                .body("data.sessions.tokenId", hasItems(adminTokenId, bofficerTokenId));
+    }
+
+    @Test
+    void logout_bofficer_byAdmin() {
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "bofficer1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
         given()
                 .contentType("application/json")
                 .body("""
@@ -315,7 +487,7 @@ public class LogoutTest {
                 .statusCode(200)
                 .body("status", equalTo("success"));
 
-        // test if tokens were deleted
+        // test if all tokens were deleted
         given()
                 .contentType("application/json")
                 .body("""
@@ -332,37 +504,72 @@ public class LogoutTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.sessions", hasSize(1))
-                .body("data.sessions.username", hasItems("admin1@fct"));
-
-        // test if users still exist
-        given()
-                .contentType("application/json")
-                .body("""
-                            {
-                              "input": {
-                              },
-                              "token": {
-                                "tokenId": "%s"
-                              }
-                            }
-                        """.formatted(adminTokenId))
-                .when()
-                .post("/showusers")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("success"))
-                .body("data.users", hasSize(3));
+                .body("data.sessions", hasSize(2))
+                .body("data.sessions.tokenId", hasItems(userTokenId, adminTokenId));
     }
 
     @Test
-    void logout_byAdmin_toHimself_success() {
+    void logout_admin_byAdmin() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
-                                "username": "admin1@fct"
+                                "username": "admin2@fct",
+                                "password": "pwd",
+                                "confirmation": "pwd",
+                                "phone": "1234",
+                                "address": "street",
+                                "role": "ADMIN"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/createaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -375,7 +582,7 @@ public class LogoutTest {
                 .statusCode(200)
                 .body("status", equalTo("success"));
 
-        // test if token was deleted
+        // test if all tokens were deleted
         given()
                 .contentType("application/json")
                 .body("""
@@ -391,25 +598,8 @@ public class LogoutTest {
                 .post("/showauthsessions")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("9903"));
-
-        // test if admin still exists
-        given()
-                .contentType("application/json")
-                .body("""
-                            {
-                              "input": {
-                              },
-                              "token": {
-                                "tokenId": "%s"
-                              }
-                            }
-                        """.formatted(bofficerTokenId))
-                .when()
-                .post("/showusers")
-                .then()
-                .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.users", hasSize(3));
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.tokenId", hasItems(userTokenId, adminTokenId, bofficerTokenId));
     }
 }

@@ -204,6 +204,9 @@ public class DAO {
                 user.address,
                 user.role
         );
+
+        logoutAllSessions(user.username);
+
         datastore.put(newUser.toEntity(datastore));
     }
 
@@ -217,7 +220,7 @@ public class DAO {
         return tokenList;
     }
 
-    public void logout(String username) {
+    public void logoutAllSessions(String username) {
         Query<Entity> query = Query.newEntityQueryBuilder()
                 .setKind("Token")
                 .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
@@ -228,5 +231,15 @@ public class DAO {
         tokens.forEachRemaining(e -> keysToDelete.add(e.getKey()));
 
         datastore.delete(keysToDelete.toArray(new Key[0]));
+    }
+
+    public void logout(String tokenId) {
+        Key key = tokenKeyFactory.newKey(tokenId);
+        Entity entity = datastore.get(key);
+        if (entity == null) {
+            throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
+        }
+
+        datastore.delete(key);
     }
 }
