@@ -1,4 +1,9 @@
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Key;
 import io.restassured.RestAssured;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.*;
 
 import java.net.HttpURLConnection;
@@ -6,6 +11,7 @@ import java.net.URL;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChangeUserPasswordTest {
 
@@ -13,9 +19,17 @@ public class ChangeUserPasswordTest {
     private static String adminTokenId;
     private static String bofficerTokenId;
 
+    private static Datastore datastore;
+
     @BeforeAll
     static void setup() {
         RestAssured.baseURI = "http://localhost:8080/rest";
+
+        datastore = DatastoreOptions.newBuilder()
+                .setProjectId("test-project")
+                .setHost("http://localhost:8081")
+                .build()
+                .getService();
     }
 
     @BeforeEach
@@ -260,7 +274,7 @@ public class ChangeUserPasswordTest {
                                 "confirmation": "pwd",
                                 "phone": "1234",
                                 "address": "street",
-                                "role": "USER"
+                                "role": "BOFFICER"
                               }
                             }
                         """)
@@ -344,7 +358,7 @@ public class ChangeUserPasswordTest {
                                 "confirmation": "pwd",
                                 "phone": "1234",
                                 "address": "street",
-                                "role": "USER"
+                                "role": "ADMIN"
                               }
                             }
                         """)
@@ -476,5 +490,17 @@ public class ChangeUserPasswordTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"));
+
+        Key userKey = datastore.newKeyFactory().setKind("User").newKey("user1@fct");
+        Entity userEntity = datastore.get(userKey);
+        assertEquals(DigestUtils.sha512Hex("asd"), userEntity.getString("password"));
+
+        Key bofficerKey = datastore.newKeyFactory().setKind("User").newKey("bofficer1@fct");
+        Entity bofficerEntity = datastore.get(bofficerKey);
+        assertEquals(DigestUtils.sha512Hex("asd"), bofficerEntity.getString("password"));
+
+        Key admin1Key = datastore.newKeyFactory().setKind("User").newKey("admin1@fct");
+        Entity admin1Entity = datastore.get(admin1Key);
+        assertEquals(DigestUtils.sha512Hex("asd"), admin1Entity.getString("password"));
     }
 }
