@@ -5,10 +5,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LoginTest {
+
+    private static String adminTokenId;
 
     @BeforeAll
     static void setup() {
@@ -43,6 +45,44 @@ public class LoginTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"));
+
+        // create and log in admin
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct",
+                                "password": "pwd",
+                                "confirmation": "pwd",
+                                "phone": "1234",
+                                "address": "street",
+                                "role": "ADMIN"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/createaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        adminTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
     }
 
     @Test
@@ -122,6 +162,7 @@ public class LoginTest {
                 .body("data.token.username", equalTo("user1@fct"))
                 .body("data.token.role", equalTo("USER"));
 
+        // test if second login is successful
         given()
                 .contentType("application/json")
                 .body("""
@@ -137,5 +178,25 @@ public class LoginTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"));
+
+        // don't forget we logged in an ADMIN to use this method
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.username", hasItems("user1@fct", "admin1@fct"));
     }
 }
