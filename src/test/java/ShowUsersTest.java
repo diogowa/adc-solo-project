@@ -103,7 +103,7 @@ public class ShowUsersTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
 
         adminTokenId = given()
                 .contentType("application/json")
@@ -120,7 +120,7 @@ public class ShowUsersTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
 
         bofficerTokenId = given()
                 .contentType("application/json")
@@ -137,7 +137,7 @@ public class ShowUsersTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
     }
 
     @Test

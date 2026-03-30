@@ -103,7 +103,7 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
 
         adminTokenId = given()
                 .contentType("application/json")
@@ -120,7 +120,7 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
 
         bofficerTokenId = given()
                 .contentType("application/json")
@@ -137,7 +137,7 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .extract().path("data.tokenId");
+                .extract().path("data.token.tokenId");
     }
 
     @Test
@@ -148,7 +148,7 @@ public class DeleteAccountTest {
                 .body("""
                             {
                               "input": {
-                                "username": "user1@fct",
+                                "username": "user1@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -170,7 +170,7 @@ public class DeleteAccountTest {
                 .body("""
                             {
                               "input": {
-                                "username": "user1@fct",
+                                "username": "user1@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -192,7 +192,7 @@ public class DeleteAccountTest {
                 .body("""
                             {
                               "input": {
-                                "username": "user5@fct",
+                                "username": "user5@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -231,7 +231,7 @@ public class DeleteAccountTest {
                 .body("""
                             {
                               "input": {
-                                "username": "user1@fct",
+                                "username": "user1@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
