@@ -11,10 +11,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DAO {
-    private static final Datastore datastore = DatastoreOptions.newBuilder()
-            .setProjectId("individual-project-491518")
-            .build()
-            .getService();
+    private static final Datastore datastore = createDatastore();
+
+    private static Datastore createDatastore() {
+        String emulatorHost = System.getenv("DATASTORE_EMULATOR_HOST");
+
+        if (emulatorHost != null) {
+            // use emulator
+            return DatastoreOptions.newBuilder()
+                    .setProjectId("test-project")
+                    .setHost("http://" + emulatorHost)
+                    .build()
+                    .getService();
+        }
+
+        // use datastore
+        return DatastoreOptions.newBuilder()
+                .setProjectId("individual-project-491518")
+                .build()
+                .getService();
+    }
 
     private final KeyFactory userKeyFactory = datastore.newKeyFactory().setKind("User");
     private final KeyFactory tokenKeyFactory = datastore.newKeyFactory().setKind("Token");
