@@ -222,7 +222,7 @@ public class DeleteAccountTest {
                 .statusCode(200)
                 .body("status", equalTo("success"))
                 .body("data.users", hasSize(3))
-                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct"));;
+                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct"));
 
         given()
                 .contentType("application/json")

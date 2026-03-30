@@ -118,9 +118,7 @@ public class ValidateTokenTest {
         // make token expire
         Key key = datastore.newKeyFactory().setKind("Token").newKey(adminTokenId);
         Entity entity = datastore.get(key);
-        if (entity == null) {
-            assert false;
-        }
+        assert entity != null;
         Entity updated = Entity.newBuilder(entity).set("expiresAt", entity.getLong("issuedAt")).build();
         datastore.put(updated);
 

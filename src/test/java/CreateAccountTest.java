@@ -4,7 +4,6 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Key;
 import io.restassured.RestAssured;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.example.model.Role;
 import org.junit.jupiter.api.*;
 
 import java.net.HttpURLConnection;
