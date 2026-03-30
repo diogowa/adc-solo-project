@@ -133,7 +133,9 @@ public class DAO {
         List<Key> keysToDelete = new ArrayList<>();
         tokens.forEachRemaining(e -> keysToDelete.add(e.getKey()));
 
-        datastore.delete(keysToDelete.toArray(new Key[0]));
+        if (!keysToDelete.isEmpty()) {
+            datastore.delete(keysToDelete.toArray(new Key[0]));
+        }
 
         datastore.delete(key);
     }
@@ -166,7 +168,7 @@ public class DAO {
                 newRole
         );
 
-        // update user tokens
+        // update user tokens with new role
         Query<Entity> query = Query.newEntityQueryBuilder()
                 .setKind("Token")
                 .setFilter(StructuredQuery.PropertyFilter.eq("username", username))

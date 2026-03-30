@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.*;
 public class ValidateTokenTest {
 
     private static String adminTokenId;
+
     private static Datastore datastore;
 
     @BeforeAll
