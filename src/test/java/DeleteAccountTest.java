@@ -205,6 +205,27 @@ public class DeleteAccountTest {
 
     @Test
     void deleteAccount_byAdmin() {
+        // place admin2 to test if admin can delete admin
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct",
+                                "password": "pwd",
+                                "confirmation": "pwd",
+                                "phone": "1234",
+                                "address": "street",
+                                "role": "ADMIN"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/createaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
         given()
                 .contentType("application/json")
                 .body("""
@@ -221,8 +242,8 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.users", hasSize(3))
-                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct"));
+                .body("data.users", hasSize(4))
+                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct", "admin2@fct"));
 
         given()
                 .contentType("application/json")
@@ -230,6 +251,42 @@ public class DeleteAccountTest {
                             {
                               "input": {
                                 "username": "user1@fct"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/deleteaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "bofficer1@fct"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/deleteaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -259,10 +316,10 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.users", hasSize(2))
-                .body("data.users.username", hasItems("bofficer1@fct", "admin1@fct"));
+                .body("data.users", hasSize(1))
+                .body("data.users.username", hasItems("admin1@fct"));
 
-        // test if user token was deleted
+        // test if user and bofficer tokens were deleted
         given()
                 .contentType("application/json")
                 .body("""
@@ -279,7 +336,126 @@ public class DeleteAccountTest {
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.sessions", hasSize(2))
-                .body("data.sessions.username", hasItems("bofficer1@fct", "admin1@fct"));
+                .body("data.sessions", hasSize(1))
+                .body("data.sessions.username", hasItems("admin1@fct"));
+    }
+
+    @Test
+    void deleteAccount_byAdmin_toHimself() {
+        // place and login admin2 to test if admin1 was deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct",
+                                "password": "pwd",
+                                "confirmation": "pwd",
+                                "phone": "1234",
+                                "address": "street",
+                                "role": "ADMIN"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/createaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        String tempAdminTokenId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin2@fct",
+                                "password": "pwd"
+                              }
+                            }
+                        """)
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .extract().path("data.token.tokenId");
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showusers")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.users", hasSize(4))
+                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct", "admin2@fct"));
+
+        // delete himself
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "admin1@fct"
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/deleteaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+
+        // test if admin1 was deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(tempAdminTokenId))
+                .when()
+                .post("/showusers")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.users", hasSize(3))
+                .body("data.users.username", hasItems("user1@fct", "bofficer1@fct", "admin2@fct"));
+
+        // test if admin1 token was deleted
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(tempAdminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(3))
+                .body("data.sessions.username", hasItems("user1@fct", "bofficer1@fct", "admin2@fct"));
     }
 }
