@@ -266,7 +266,7 @@ public class ChangeUserRoleTest {
                 .statusCode(200)
                 .body("status", equalTo("success"))
                 .body("data.sessions", hasSize(3))
-                .body("data.sessions.role", hasItems("ADMIN", "ADMIN", "BOFFICER"));
+                .body("data.sessions.role", hasItems("ADMIN", "BOFFICER"));
     }
 
     @Test
