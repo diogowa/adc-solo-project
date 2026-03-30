@@ -1,18 +1,28 @@
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class CreateAccountTest {
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws IOException {
         RestAssured.baseURI = "http://localhost:8080/rest";
+
+        // clean database
+        URL url = new URL("http://localhost:8081/reset");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("POST");
+        con.getResponseCode();
     }
 
-    @Test
+    @Test @Order(1)
     void createUser_usernameIsNull() {
         given()
                 .contentType("application/json")
@@ -35,7 +45,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(2)
     void createUser_invalidUsername() {
         given()
                 .contentType("application/json")
@@ -58,7 +68,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(3)
     void createUser_passwordIsNull() {
         given()
                 .contentType("application/json")
@@ -81,7 +91,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(4)
     void createUser_confirmationIsNull() {
         given()
                 .contentType("application/json")
@@ -104,7 +114,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(5)
     void createUser_passwordAndConfirmationDoNotMatch() {
         given()
                 .contentType("application/json")
@@ -127,7 +137,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(6)
     void createUser_phoneIsNull() {
         given()
                 .contentType("application/json")
@@ -150,7 +160,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(7)
     void createUser_invalidPhone_notEnoughDigits() {
         given()
                 .contentType("application/json")
@@ -173,7 +183,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(8)
     void createUser_invalidPhone_moreDigits() {
         given()
                 .contentType("application/json")
@@ -196,7 +206,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(9)
     void createUser_invalidPhone_isNotNumber() {
         given()
                 .contentType("application/json")
@@ -219,7 +229,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(10)
     void createUser_addressIsNull() {
         given()
                 .contentType("application/json")
@@ -242,7 +252,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(11)
     void createUser_roleIsNull() {
         given()
                 .contentType("application/json")
@@ -265,7 +275,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(12)
     void createUser_invalidRole() {
         given()
                 .contentType("application/json")
@@ -288,7 +298,7 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test
+    @Test @Order(13)
     void createUser_success() {
         given()
                 .contentType("application/json")
@@ -313,7 +323,7 @@ public class CreateAccountTest {
                 .body("data.role", equalTo("USER"));
     }
 
-    @Test
+    @Test @Order(14)
     void createUser_userAlreadyExists() {
         given()
                 .contentType("application/json")
