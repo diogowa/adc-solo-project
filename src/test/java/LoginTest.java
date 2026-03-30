@@ -7,7 +7,6 @@ import java.net.URL;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LoginTest {
 
     private static String adminTokenId;
