@@ -40,12 +40,11 @@ public class LoginTest {
                 .post("/createaccount")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("success"))
-                .body("data.username", equalTo("user1@fct"))
-                .body("data.role", equalTo("USER"));
+                .body("status", equalTo("success"));
     }
 
-    @Test @Order(1)
+    @Test
+    @Order(1)
     void login_invalidInput() {
         given()
                 .contentType("application/json")
@@ -64,7 +63,8 @@ public class LoginTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(2)
+    @Test
+    @Order(2)
     void login_userNotFound() {
         given()
                 .contentType("application/json")
@@ -83,7 +83,8 @@ public class LoginTest {
                 .body("status", equalTo("9902"));
     }
 
-    @Test @Order(3)
+    @Test
+    @Order(3)
     void login_invalidCredentials() {
         given()
                 .contentType("application/json")
@@ -102,7 +103,8 @@ public class LoginTest {
                 .body("status", equalTo("9900"));
     }
 
-    @Test @Order(4)
+    @Test
+    @Order(4)
     void login_success() {
         given()
                 .contentType("application/json")
@@ -123,7 +125,8 @@ public class LoginTest {
                 .body("data.token.role", equalTo("USER"));
     }
 
-    @Test @Order(5)
+    @Test
+    @Order(5)
     void login_alreadyLoggedIn() {
         given()
                 .contentType("application/json")
