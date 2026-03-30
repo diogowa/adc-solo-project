@@ -9,7 +9,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class DeleteAccountTest {
+public class ShowUserRoleTest {
 
     private static String userTokenId;
     private static String adminTokenId;
@@ -141,7 +141,7 @@ public class DeleteAccountTest {
 
     @Test
     @Order(1)
-    void deleteAccount_byUser() {
+    void showUserRole_byUser() {
         given()
                 .contentType("application/json")
                 .body("""
@@ -155,7 +155,7 @@ public class DeleteAccountTest {
                             }
                         """.formatted(userTokenId))
                 .when()
-                .post("/deleteaccount")
+                .post("/showuserrole")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("9905"));
@@ -163,7 +163,7 @@ public class DeleteAccountTest {
 
     @Test
     @Order(2)
-    void deleteAccount_byBofficer() {
+    void showUserRole_byBofficer_toUser() {
         given()
                 .contentType("application/json")
                 .body("""
@@ -177,21 +177,23 @@ public class DeleteAccountTest {
                             }
                         """.formatted(bofficerTokenId))
                 .when()
-                .post("/deleteaccount")
+                .post("/showuserrole")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("9905"));
+                .body("status", equalTo("success"))
+                .body("data.username", equalTo("user1@fct"))
+                .body("data.role", equalTo("USER"));
     }
 
     @Test
     @Order(3)
-    void deleteAccount_byAdmin_userNotFound() {
+    void showUserRole_byAdmin_userNotFound() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
-                                "username": "user5@fct"
+                                "username": "user2@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -199,7 +201,7 @@ public class DeleteAccountTest {
                             }
                         """.formatted(adminTokenId))
                 .when()
-                .post("/deleteaccount")
+                .post("/showuserrole")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("9902"));
@@ -207,12 +209,13 @@ public class DeleteAccountTest {
 
     @Test
     @Order(4)
-    void deleteAccount_byAdmin() {
+    void showUserRole_byAdmin() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
+                                "username": "bofficer1@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -220,35 +223,23 @@ public class DeleteAccountTest {
                             }
                         """.formatted(adminTokenId))
                 .when()
-                .post("/showusers")
+                .post("/showuserrole")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.users", hasSize(3));
-        given()
-                .contentType("application/json")
-                .body("""
-                            {
-                              "input": {
-                                "username": "user1@fct"
-                              },
-                              "token": {
-                                "tokenId": "%s"
-                              }
-                            }
-                        """.formatted(adminTokenId))
-                .when()
-                .post("/deleteaccount")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("success"));
+                .body("data.username", equalTo("bofficer1@fct"))
+                .body("data.role", equalTo("BOFFICER"));
+    }
 
-        // test if user was deleted
+    @Test
+    @Order(5)
+    void showUserRole_byAdmin_toHimself() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
+                                "username": "admin1@fct"
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -256,31 +247,11 @@ public class DeleteAccountTest {
                             }
                         """.formatted(adminTokenId))
                 .when()
-                .post("/showusers")
+                .post("/showuserrole")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("success"))
-                .body("data.users", hasSize(2))
-                .body("data.users.username", hasItems("bofficer1@fct", "admin1@fct"));
-
-        // test if user token was deleted
-        given()
-                .contentType("application/json")
-                .body("""
-                            {
-                              "input": {
-                              },
-                              "token": {
-                                "tokenId": "%s"
-                              }
-                            }
-                        """.formatted(adminTokenId))
-                .when()
-                .post("/showauthsessions")
-                .then()
-                .statusCode(200)
-                .body("status", equalTo("success"))
-                .body("data.sessions", hasSize(2))
-                .body("data.sessions.username", hasItems("bofficer1@fct", "admin1@fct"));
+                .body("data.username", equalTo("admin1@fct"))
+                .body("data.role", equalTo("ADMIN"));
     }
 }
