@@ -69,15 +69,11 @@ public class AuthResource {
         try {
             TokenEntity token = dao.validateToken(body.token.tokenId);
 
-            if (token.role.equals(Role.ADMIN)) {
-                dao.logoutUser(req.username);
-                return ResponseHelper.ok(Map.of("message", "Logout successful"));
-
-            } else if ((token.role.equals(Role.USER) && token.username.equals(req.username))
+            if (token.role.equals(Role.ADMIN)
+                    || (token.role.equals(Role.USER) && token.username.equals(req.username))
                     || (token.role.equals(Role.BOFFICER) && token.username.equals(req.username))) {
-                dao.logout(token.tokenId);
+                dao.logout(req.username);
                 return ResponseHelper.ok(Map.of("message", "Logout successful"));
-
             } else {
                 return ResponseHelper.error(ResponseHelper.FORBIDDEN);
             }

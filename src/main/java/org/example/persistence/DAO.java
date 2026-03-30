@@ -215,18 +215,7 @@ public class DAO {
         return tokenList;
     }
 
-    public void logout(String tokenId) {
-        Key tokenKey = tokenKeyFactory.newKey(tokenId);
-        Entity tokenEntity = datastore.get(tokenKey);
-        if (tokenEntity == null) {
-            throw new RuntimeException(ResponseHelper.INVALID_TOKEN);
-        }
-
-        datastore.delete(tokenKey);
-    }
-
-    // to only be used by admin
-    public void logoutUser(String username) {
+    public void logout(String username) {
         Query<Entity> query = Query.newEntityQueryBuilder()
                 .setKind("Token")
                 .setFilter(StructuredQuery.PropertyFilter.eq("username", username))
