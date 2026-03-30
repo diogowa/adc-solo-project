@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ShowUsersTest {
+public class DeleteAccountTest {
 
     private static String userTokenId;
     private static String adminTokenId;
@@ -142,12 +142,13 @@ public class ShowUsersTest {
 
     @Test
     @Order(1)
-    void showUsers_byUser() {
+    void deleteAccount_byUser() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
+                                "username": "user1@fct",
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -155,7 +156,7 @@ public class ShowUsersTest {
                             }
                         """.formatted(userTokenId))
                 .when()
-                .post("/showusers")
+                .post("/deleteaccount")
                 .then()
                 .statusCode(200)
                 .body("status", equalTo("9905"));
@@ -163,12 +164,13 @@ public class ShowUsersTest {
 
     @Test
     @Order(2)
-    void showUsers_byBofficer() {
+    void deleteAccount_byBofficer() {
         given()
                 .contentType("application/json")
                 .body("""
                             {
                               "input": {
+                                "username": "user1@fct",
                               },
                               "token": {
                                 "tokenId": "%s"
@@ -176,16 +178,37 @@ public class ShowUsersTest {
                             }
                         """.formatted(bofficerTokenId))
                 .when()
-                .post("/showusers")
+                .post("/deleteaccount")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("success"))
-                .body("data.users", hasSize(3));
+                .body("status", equalTo("9905"));
     }
 
     @Test
     @Order(3)
-    void showUsers_byAdmin() {
+    void deleteAccount_byAdmin_userNotFound() {
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "user5@fct",
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/deleteaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("9902"));
+    }
+
+    @Test
+    @Order(4)
+    void deleteAccount_byAdmin() {
         given()
                 .contentType("application/json")
                 .body("""
@@ -203,5 +226,39 @@ public class ShowUsersTest {
                 .statusCode(200)
                 .body("status", equalTo("success"))
                 .body("data.users", hasSize(3));
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                                "username": "user1@fct",
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/deleteaccount")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"));
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showusers")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.users", hasSize(2));
     }
 }

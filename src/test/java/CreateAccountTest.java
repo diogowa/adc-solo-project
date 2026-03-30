@@ -22,7 +22,8 @@ public class CreateAccountTest {
         con.getResponseCode();
     }
 
-    @Test @Order(1)
+    @Test
+    @Order(1)
     void createUser_usernameIsNull() {
         given()
                 .contentType("application/json")
@@ -45,7 +46,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(2)
+    @Test
+    @Order(2)
     void createUser_invalidUsername() {
         given()
                 .contentType("application/json")
@@ -68,7 +70,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(3)
+    @Test
+    @Order(3)
     void createUser_passwordIsNull() {
         given()
                 .contentType("application/json")
@@ -91,7 +94,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(4)
+    @Test
+    @Order(4)
     void createUser_confirmationIsNull() {
         given()
                 .contentType("application/json")
@@ -114,7 +118,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(5)
+    @Test
+    @Order(5)
     void createUser_passwordAndConfirmationDoNotMatch() {
         given()
                 .contentType("application/json")
@@ -137,7 +142,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(6)
+    @Test
+    @Order(6)
     void createUser_phoneIsNull() {
         given()
                 .contentType("application/json")
@@ -160,7 +166,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(7)
+    @Test
+    @Order(7)
     void createUser_invalidPhone_notEnoughDigits() {
         given()
                 .contentType("application/json")
@@ -183,7 +190,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(8)
+    @Test
+    @Order(8)
     void createUser_invalidPhone_moreDigits() {
         given()
                 .contentType("application/json")
@@ -206,7 +214,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(9)
+    @Test
+    @Order(9)
     void createUser_invalidPhone_isNotNumber() {
         given()
                 .contentType("application/json")
@@ -229,7 +238,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(10)
+    @Test
+    @Order(10)
     void createUser_addressIsNull() {
         given()
                 .contentType("application/json")
@@ -252,7 +262,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(11)
+    @Test
+    @Order(11)
     void createUser_roleIsNull() {
         given()
                 .contentType("application/json")
@@ -275,7 +286,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(12)
+    @Test
+    @Order(12)
     void createUser_invalidRole() {
         given()
                 .contentType("application/json")
@@ -298,7 +310,8 @@ public class CreateAccountTest {
                 .body("status", equalTo("9906"));
     }
 
-    @Test @Order(13)
+    @Test
+    @Order(13)
     void createUser_success() {
         given()
                 .contentType("application/json")
@@ -323,7 +336,8 @@ public class CreateAccountTest {
                 .body("data.role", equalTo("USER"));
     }
 
-    @Test @Order(14)
+    @Test
+    @Order(14)
     void createUser_userAlreadyExists() {
         given()
                 .contentType("application/json")
