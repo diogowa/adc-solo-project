@@ -15,7 +15,7 @@ public class CreateAccountRequest {
     }
 
     public boolean isValidRole(String role) {
-        if (role == null && role.isEmpty()) {
+        if (role == null || role.isBlank()) {
             return false;
         }
         try {

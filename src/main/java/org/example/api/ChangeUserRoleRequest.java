@@ -7,7 +7,7 @@ public class ChangeUserRoleRequest {
     public String newRole;
 
     public boolean isValidRole(String newRole) {
-        if (newRole == null && newRole.isEmpty()) {
+        if (newRole == null || newRole.isBlank()) {
             return false;
         }
         try {
