@@ -75,18 +75,18 @@ Your application will be running on: `https://<your-project-id>.appspot.com/`
 
 ---
 ## Implementation
-The entities that can be found in the Datastore are 'User' and 'Token', which are independent of one another.
+- The entities that can be found in the Datastore are 'User' and 'Token', which are independent of one another.
 
-A user can log in multiple times, creating a new login token each time. This enables the user to log in on different devices.
+- A user can log in multiple times, creating a new login token each time. This enables the user to log in on different devices.
 
-Each login token represents a user, so when a user's role changes, all of their login tokens are updated with the new role.
+- Each login token represents a user, so when a user's role changes, all of their login tokens are updated with the new role.
 
-When a user changes their password, they are logged out.
+- When a user changes their password, they are logged out.
 
-When a user is deleted, their login tokens are also deleted.
+- When a user is deleted, their login tokens are also deleted.
 
-When a user logs out, the token used to log out is deleted. This keeps the user logged in on different devices.
+- When a user logs out, the token used to log out is deleted. This keeps the user logged in on different devices.
 
-When an admin logs out a user, all of their tokens are deleted.
+- When an admin logs out a user, all of their tokens are deleted.
 
-Only tokens that haven't expired are shown when listing authenticated sessions.
+- Only tokens that haven't expired are shown when listing authenticated sessions.
