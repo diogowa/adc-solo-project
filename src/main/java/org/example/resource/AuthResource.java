@@ -104,7 +104,7 @@ public class AuthResource {
                 return ResponseHelper.error(ResponseHelper.UNAUTHORIZED);
             }
 
-            List<Map<String, Object>> result = dao.getAllTokens()
+            List<Map<String, Object>> result = dao.getAuthSessions()
                     .stream()
                     .map(t -> Map.<String, Object>of(
                             "tokenId", t.tokenId,

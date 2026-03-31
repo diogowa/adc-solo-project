@@ -210,8 +210,11 @@ public class DAO {
         datastore.put(newUser.toEntity(datastore));
     }
 
-    public List<TokenEntity> getAllTokens() {
-        Query<Entity> query = Query.newEntityQueryBuilder().setKind("Token").build();
+    public List<TokenEntity> getAuthSessions() {
+        Query<Entity> query = Query.newEntityQueryBuilder()
+                .setKind("Token")
+                .setFilter(StructuredQuery.PropertyFilter.gt("expiresAt", System.currentTimeMillis()))
+                .build();
         QueryResults<Entity> tokens = datastore.run(query);
 
         List<TokenEntity> tokenList = new ArrayList<>();
