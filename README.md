@@ -11,13 +11,28 @@
 [Docs](https://docs.cloud.google.com/sdk/docs/install-sdk)
 
 ### Google Datastore Emulator
-[Docs](https://docs.cloud.google.com/datastore/docs/tools/datastore-emulator)
 ```
 gcloud components install cloud-datastore-emulator
 ```
+[Docs](https://docs.cloud.google.com/datastore/docs/tools/datastore-emulator)
 
 ---
 ## Usage
+### Local
+Authenticate to your Google Account:
+```
+gcloud auth login
+```
+Config to your project:
+```
+gcloud config set project <proj-id>
+```
+```
+mvn clean package -DskipTests
+mvn appengine:run
+```
+
+### Emulator
 Authenticate to your Google Account:
 ```
 gcloud auth application-default login
@@ -26,14 +41,6 @@ Config to your project:
 ```
 gcloud config set project <proj-id>
 ```
-
-### Local
-```
-mvn clean package -DskipTests
-mvn appengine:run
-```
-
-### Emulator
 In a new terminal run the emulator:
 ```
 gcloud beta emulators datastore start --host-port=localhost:8081 --no-store-on-disk
@@ -44,7 +51,6 @@ export DATASTORE_EMULATOR_HOST=localhost:8081
 mvn clean package -DskipTests
 mvn appengine:run
 ```
-
 
 ---
 ## Test Application
@@ -69,10 +75,16 @@ Your application will be running on: `https://<your-project-id>.appspot.com/`
 
 ---
 ## Implementation
-The entities you can find in the Datastore are User and Token, and they are independent of one another.
+The entities that can be found in the Datastore are 'User' and 'Token', which are independent of one another.
 
-The same user can log in multiple times, creating always a new login token.
+A user can log in multiple times, creating a new login token each time. This enables the user to log in on different devices.
 
-The login token has the role of the user, so when changing the role of a user, every login token of that user is updated with the new role.
+Each login token represents a user, so when a user's role changes, all of their login tokens are updated with the new role.
 
-When a user is deleted or logs out, every login token of that user is also deleted.
+When a user changes their password, they are logged out.
+
+When a user is deleted, their login tokens are also deleted.
+
+When a user logs out, the token used to log out is deleted. This keeps the user logged in on different devices.
+
+When an admin logs out a user, all of their tokens are deleted.
