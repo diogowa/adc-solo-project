@@ -88,3 +88,5 @@ When a user is deleted, their login tokens are also deleted.
 When a user logs out, the token used to log out is deleted. This keeps the user logged in on different devices.
 
 When an admin logs out a user, all of their tokens are deleted.
+
+Only tokens that haven't expired are shown when listing authenticated sessions.
