@@ -1,3 +1,7 @@
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Key;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
 
@@ -13,9 +17,17 @@ public class ShowAuthSessionsTest {
     private static String adminTokenId;
     private static String bofficerTokenId;
 
+    private static Datastore datastore;
+
     @BeforeAll
     static void setup() {
         RestAssured.baseURI = "http://localhost:8080/rest";
+
+        datastore = DatastoreOptions.newBuilder()
+                .setProjectId("test-project")
+                .setHost("http://localhost:8081")
+                .build()
+                .getService();
     }
 
     @BeforeEach
@@ -200,5 +212,31 @@ public class ShowAuthSessionsTest {
                 .body("status", equalTo("success"))
                 .body("data.sessions", hasSize(3))
                 .body("data.sessions.username", hasItems("user1@fct", "bofficer1@fct", "admin1@fct"));
+
+        // make user1 token expire
+        Key key = datastore.newKeyFactory().setKind("Token").newKey(userTokenId);
+        Entity entity = datastore.get(key);
+        assert entity != null;
+        Entity updated = Entity.newBuilder(entity).set("expiresAt", entity.getLong("issuedAt")).build();
+        datastore.put(updated);
+
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "input": {
+                              },
+                              "token": {
+                                "tokenId": "%s"
+                              }
+                            }
+                        """.formatted(adminTokenId))
+                .when()
+                .post("/showauthsessions")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo("success"))
+                .body("data.sessions", hasSize(2))
+                .body("data.sessions.username", hasItems("bofficer1@fct", "admin1@fct"));
     }
 }
